@@ -1,0 +1,40 @@
+{
+  "name": "internship-portal",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "seed": "node scripts/seed.js",
+    "generate-secrets": "node scripts/generate-secrets.js",
+    "db:init": "node -e \"const db = require('better-sqlite3')('./internship.db'); console.log('Database initialized');\"",
+    "deploy:vercel": "npm run build && vercel --prod",
+    "health-check": "curl -f http://localhost:3000/api/health || echo 'Health check failed'"
+  },
+  "dependencies": {
+    "@tailwindcss/postcss": "^4.1.13",
+    "autoprefixer": "^10.4.21",
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^12.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "next": "15.5.4",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^8",
+    "eslint-config-next": "15.5.4",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}
