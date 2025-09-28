@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, logout, isLoading } = useAuth();
   const router = useRouter();
 
   const handleLogout = () => {
@@ -13,7 +13,62 @@ export default function Navbar() {
     router.push('/login');
   };
 
-  if (!user) return null;
+  // Show loading state while auth is initializing
+  if (isLoading) {
+    return (
+      <nav className="bg-blue-600 text-white shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center">
+              <Link href="/" className="text-xl font-bold">
+                Internship Portal
+              </Link>
+            </div>
+            <div className="flex items-center space-x-4">
+              {/* Loading placeholder */}
+            </div>
+          </div>
+        </div>
+      </nav>
+    );
+  }
+
+  // If no user, show public navigation
+  if (!user) {
+    return (
+      <nav className="bg-blue-600 text-white shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex items-center">
+              <Link href="/" className="text-xl font-bold">
+                Internship Portal
+              </Link>
+            </div>
+            <div className="flex items-center space-x-4">
+              <Link
+                href="/internships"
+                className="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Internships
+              </Link>
+              <Link
+                href="/login"
+                className="hover:bg-blue-700 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Login
+              </Link>
+              <Link
+                href="/register"
+                className="bg-blue-500 hover:bg-blue-400 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+              >
+                Register
+              </Link>
+            </div>
+          </div>
+        </div>
+      </nav>
+    );
+  }
 
   const getNavLinks = () => {
     switch (user.role) {
@@ -50,6 +105,7 @@ export default function Navbar() {
     }
   };
 
+  // Authenticated user navigation
   return (
     <nav className="bg-blue-600 text-white shadow-lg">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

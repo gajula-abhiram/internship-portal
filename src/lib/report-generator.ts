@@ -443,7 +443,7 @@ export class ReportGenerator {
         <div class="header">
           <h1>${reportData.title}</h1>
           <p>Generated on: ${new Date(reportData.generatedAt).toLocaleDateString()}</p>
-          <p>Rajasthan Technical University - Placement Cell</p>
+          <p>Technical University - Placement Cell</p>
         </div>
         
         ${reportData.summary ? `

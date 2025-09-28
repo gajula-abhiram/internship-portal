@@ -30,14 +30,40 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# env files (exclude all except examples)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+# Allow .env.example and .env.production (template files)
+!.env.example
+!.env.production
 
-# vercel
+# vercel deployment files
 .vercel
 
 # typescript
 *.tsbuildinfo
 next-env.d.ts
 
-.vercel
+# database files (exclude from version control)
+*.db
+*.db-shm
+*.db-wal
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     // Check for existing token on mount
-    const checkToken = () => {
+    const checkToken = async () => {
       try {
         const savedToken = tokenStorage.get();
         if (savedToken) {
@@ -59,12 +59,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     };
 
-    // Only run on client side
-    if (typeof window !== 'undefined') {
-      checkToken();
-    } else {
-      setIsLoading(false);
-    }
+    // Small delay to ensure hydration is complete
+    const timer = setTimeout(checkToken, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   const login = (user: User, token: string) => {

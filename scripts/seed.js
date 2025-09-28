@@ -1,5 +1,6 @@
 import Database from 'better-sqlite3';
 import bcrypt from 'bcryptjs';
+import sqlite3 from 'better-sqlite3';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
@@ -15,7 +16,7 @@ function getDatabase() {
     ? '/tmp/internship.db' 
     : join(process.cwd(), 'internship.db');
   
-  const db = new Database(dbPath);
+  const db = new sqlite3(dbPath);
   db.pragma('journal_mode = WAL');
   initializeDatabase(db);
   return db;
@@ -129,13 +130,13 @@ async function seedDatabase() {
     db.prepare('DELETE FROM internships').run();
     db.prepare('DELETE FROM users').run();
 
-    // Sample password hash
-    const defaultPasswordHash = await hashPassword('password123');
+    // Sample password hash - now meets strong password requirements
+    const defaultPasswordHash = await hashPassword('Password123!');
 
     // Seed Users
     console.log('👥 Seeding users...');
     
-    // Students
+    // Students - Expanded with more diverse backgrounds
     const students = [
       { username: 'amit.sharma', name: 'Amit Sharma', email: 'amit.sharma@rtu.ac.in', department: 'Computer Science', semester: 6 },
       { username: 'priya.singh', name: 'Priya Singh', email: 'priya.singh@rtu.ac.in', department: 'Information Technology', semester: 6 },
@@ -146,7 +147,24 @@ async function seedDatabase() {
       { username: 'rohit.meena', name: 'Rohit Meena', email: 'rohit.meena@rtu.ac.in', department: 'Electrical Engineering', semester: 5 },
       { username: 'kavya.sharma', name: 'Kavya Sharma', email: 'kavya.sharma@jec.ac.in', department: 'Computer Science', semester: 8 },
       { username: 'arjun.patel', name: 'Arjun Patel', email: 'arjun.patel@rtu.ac.in', department: 'Information Technology', semester: 6 },
-      { username: 'ritu.choudhary', name: 'Ritu Choudhary', email: 'ritu.choudhary@jec.ac.in', department: 'Electronics & Communication', semester: 7 }
+      { username: 'ritu.choudhary', name: 'Ritu Choudhary', email: 'ritu.choudhary@jec.ac.in', department: 'Electronics & Communication', semester: 7 },
+      
+      // Additional students for better demonstration
+      { username: 'aakash.gupta', name: 'Aakash Gupta', email: 'aakash.gupta@rtu.ac.in', department: 'Computer Science', semester: 6 },
+      { username: 'shreya.mittal', name: 'Shreya Mittal', email: 'shreya.mittal@jec.ac.in', department: 'Information Technology', semester: 5 },
+      { username: 'karan.singh', name: 'Karan Singh', email: 'karan.singh@rtu.ac.in', department: 'Mechanical Engineering', semester: 7 },
+      { username: 'ananya.joshi', name: 'Ananya Joshi', email: 'ananya.joshi@jec.ac.in', department: 'Electronics & Communication', semester: 6 },
+      { username: 'dev.agarwal', name: 'Dev Agarwal', email: 'dev.agarwal@rtu.ac.in', department: 'Civil Engineering', semester: 8 },
+      { username: 'ishita.sharma', name: 'Ishita Sharma', email: 'ishita.sharma@jec.ac.in', department: 'Electrical Engineering', semester: 5 },
+      { username: 'mohit.verma', name: 'Mohit Verma', email: 'mohit.verma@rtu.ac.in', department: 'Computer Science', semester: 7 },
+      { username: 'tanya.gupta', name: 'Tanya Gupta', email: 'tanya.gupta@jec.ac.in', department: 'Information Technology', semester: 6 },
+      { username: 'rahul.jain', name: 'Rahul Jain', email: 'rahul.jain@rtu.ac.in', department: 'Mechanical Engineering', semester: 5 },
+      { username: 'nidhi.agarwal', name: 'Nidhi Agarwal', email: 'nidhi.agarwal@jec.ac.in', department: 'Electronics & Communication', semester: 8 },
+      { username: 'varun.sharma', name: 'Varun Sharma', email: 'varun.sharma@rtu.ac.in', department: 'Civil Engineering', semester: 6 },
+      { username: 'sakshi.singh', name: 'Sakshi Singh', email: 'sakshi.singh@jec.ac.in', department: 'Electrical Engineering', semester: 7 },
+      { username: 'anirudh.gupta', name: 'Anirudh Gupta', email: 'anirudh.gupta@rtu.ac.in', department: 'Computer Science', semester: 5 },
+      { username: 'divya.mittal', name: 'Divya Mittal', email: 'divya.mittal@jec.ac.in', department: 'Information Technology', semester: 6 },
+      { username: 'harsh.agarwal', name: 'Harsh Agarwal', email: 'harsh.agarwal@rtu.ac.in', department: 'Mechanical Engineering', semester: 8 }
     ];
 
     // Staff members
@@ -371,6 +389,163 @@ async function seedDatabase() {
         stipend_min: 10000,
         stipend_max: 15000,
         is_placement: false
+      },
+      
+      // Additional Internship Opportunities
+      {
+        title: 'Mobile App Development Intern',
+        description: 'Mobile development internship at Bikaner Software Solutions. Work on iOS and Android applications using React Native and Flutter.',
+        required_skills: ['React Native', 'Flutter', 'Mobile Development', 'JavaScript'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 9000,
+        stipend_max: 13500,
+        is_placement: false
+      },
+      {
+        title: 'Machine Learning Intern',
+        description: 'AI/ML internship at Jaisalmer Analytics. Work on data science projects using Python, TensorFlow, and machine learning algorithms.',
+        required_skills: ['Python', 'Machine Learning', 'TensorFlow', 'Data Science'],
+        eligible_departments: ['Computer Science', 'Information Technology', 'Electronics & Communication'],
+        stipend_min: 10000,
+        stipend_max: 15000,
+        is_placement: false
+      },
+      {
+        title: 'Database Administrator Intern',
+        description: 'Database management internship at Pushkar Data Systems. Learn database design, optimization, and administration using MySQL and PostgreSQL.',
+        required_skills: ['SQL', 'Database Management', 'MySQL', 'PostgreSQL'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 8500,
+        stipend_max: 12500,
+        is_placement: false
+      },
+      {
+        title: 'Renewable Energy Systems Intern',
+        description: 'Green energy internship at Mount Abu Solar Solutions. Work on solar panel installations, energy optimization, and sustainable technologies.',
+        required_skills: ['Renewable Energy', 'Solar Systems', 'Energy Management', 'Sustainability'],
+        eligible_departments: ['Electrical Engineering', 'Mechanical Engineering'],
+        stipend_min: 9500,
+        stipend_max: 14000,
+        is_placement: false
+      },
+      {
+        title: 'Structural Engineering Intern',
+        description: 'Construction and structural design internship at Chittorgarh Construction Corp. Learn building design, structural analysis, and construction management.',
+        required_skills: ['Structural Design', 'AutoCAD', 'STAAD Pro', 'Construction Management'],
+        eligible_departments: ['Civil Engineering'],
+        stipend_min: 8000,
+        stipend_max: 12000,
+        is_placement: false
+      },
+      {
+        title: 'Automation Engineering Intern',
+        description: 'Industrial automation internship at Sikar Manufacturing. Work with PLCs, SCADA systems, and industrial control systems.',
+        required_skills: ['PLC Programming', 'SCADA', 'Industrial Automation', 'Control Systems'],
+        eligible_departments: ['Electrical Engineering', 'Electronics & Communication', 'Mechanical Engineering'],
+        stipend_min: 9000,
+        stipend_max: 13000,
+        is_placement: false
+      },
+      {
+        title: 'UI/UX Design Intern',
+        description: 'Design internship at Beawar Creative Studios. Learn user interface design, user experience research, and design thinking methodologies.',
+        required_skills: ['UI/UX Design', 'Figma', 'Adobe Creative Suite', 'Design Thinking'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 7500,
+        stipend_max: 11500,
+        is_placement: false
+      },
+      {
+        title: 'DevOps Engineering Intern',
+        description: 'DevOps and cloud computing internship at Sawai Madhopur Tech. Learn Docker, Kubernetes, AWS, and CI/CD pipelines.',
+        required_skills: ['DevOps', 'Docker', 'Kubernetes', 'AWS', 'CI/CD'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 10500,
+        stipend_max: 15500,
+        is_placement: false
+      },
+      {
+        title: 'Embedded Systems Intern',
+        description: 'Hardware and firmware development internship at Pali Electronics. Work on microcontrollers, IoT devices, and embedded software.',
+        required_skills: ['Embedded Systems', 'Microcontrollers', 'C Programming', 'IoT'],
+        eligible_departments: ['Electronics & Communication', 'Electrical Engineering'],
+        stipend_min: 9000,
+        stipend_max: 13500,
+        is_placement: false
+      },
+      
+      // Additional Placement Opportunities
+      {
+        title: 'Cloud Solutions Architect',
+        description: 'Senior cloud architect role at Nathdwara Cloud Services. Design and implement cloud infrastructure solutions for enterprise clients.',
+        required_skills: ['Cloud Architecture', 'AWS', 'Azure', 'Solution Design'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 25000,
+        stipend_max: 40000,
+        is_placement: true
+      },
+      {
+        title: 'Full Stack Developer',
+        description: 'Full-time full stack developer at Jhalawar Web Solutions. Build end-to-end web applications using modern frameworks and technologies.',
+        required_skills: ['Full Stack Development', 'React', 'Node.js', 'MongoDB', 'Express'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 22000,
+        stipend_max: 35000,
+        is_placement: true
+      },
+      {
+        title: 'Mechanical Design Engineer',
+        description: 'Product design engineer role at Banswara Engineering Works. Design mechanical components, perform simulations, and optimize manufacturing processes.',
+        required_skills: ['Mechanical Design', 'SolidWorks', 'ANSYS', 'Product Development'],
+        eligible_departments: ['Mechanical Engineering'],
+        stipend_min: 20000,
+        stipend_max: 30000,
+        is_placement: true
+      },
+      {
+        title: 'Network Security Engineer',
+        description: 'Cybersecurity specialist role at Hanumangarh Security Systems. Implement security protocols, monitor threats, and ensure network safety.',
+        required_skills: ['Network Security', 'Cybersecurity', 'Firewall Management', 'Ethical Hacking'],
+        eligible_departments: ['Computer Science', 'Information Technology', 'Electronics & Communication'],
+        stipend_min: 23000,
+        stipend_max: 35000,
+        is_placement: true
+      },
+      {
+        title: 'Project Manager - IT',
+        description: 'IT project management role at Dausa Technology Solutions. Lead software development projects, manage teams, and ensure timely delivery.',
+        required_skills: ['Project Management', 'Agile', 'Team Leadership', 'Software Development'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 24000,
+        stipend_max: 38000,
+        is_placement: true
+      },
+      {
+        title: 'Power Systems Engineer',
+        description: 'Electrical power systems engineer at Jhunjhunu Power Corporation. Design power distribution systems and work on grid modernization projects.',
+        required_skills: ['Power Systems', 'Grid Design', 'MATLAB', 'Power Electronics'],
+        eligible_departments: ['Electrical Engineering'],
+        stipend_min: 21000,
+        stipend_max: 32000,
+        is_placement: true
+      },
+      {
+        title: 'Construction Project Manager',
+        description: 'Senior construction manager role at Ganganagar Infrastructure. Oversee large-scale construction projects and manage project timelines.',
+        required_skills: ['Construction Management', 'Project Planning', 'Team Leadership', 'Quality Control'],
+        eligible_departments: ['Civil Engineering'],
+        stipend_min: 19000,
+        stipend_max: 29000,
+        is_placement: true
+      },
+      {
+        title: 'Business Analyst',
+        description: 'Business analysis role at Sriganganagar Consultancy. Analyze business processes, gather requirements, and recommend solutions.',
+        required_skills: ['Business Analysis', 'Requirements Gathering', 'Process Improvement', 'SQL'],
+        eligible_departments: ['Computer Science', 'Information Technology', 'Mechanical Engineering'],
+        stipend_min: 20000,
+        stipend_max: 31000,
+        is_placement: true
       }
     ];
 
@@ -404,8 +579,8 @@ async function seedDatabase() {
     
     const statuses = ['APPLIED', 'MENTOR_APPROVED', 'MENTOR_REJECTED', 'INTERVIEWED', 'OFFERED', 'NOT_OFFERED', 'COMPLETED'];
     
-    // Create 50+ applications for better demonstration
-    for (let i = 0; i < 75; i++) {
+    // Create 100+ applications for better demonstration with more students and internships
+    for (let i = 0; i < 125; i++) {
       const randomStudentId = studentIds[Math.floor(Math.random() * studentIds.length)];
       const randomInternshipId = internshipIds[Math.floor(Math.random() * internshipIds.length)];
       const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
@@ -485,10 +660,10 @@ async function seedDatabase() {
     console.log(`⭐ Feedback: ${feedbackCount}`);
 
     console.log('\n🔑 Sample Login Credentials:');
-    console.log('Student: amit.sharma / password123');
-    console.log('Staff: rajesh.staff / password123');
-    console.log('Mentor: vikram.mentor / password123');
-    console.log('Employer: suresh.employer / password123');
+    console.log('Student: amit.sharma / Password123!');
+    console.log('Staff: rajesh.staff / Password123!');
+    console.log('Mentor: vikram.mentor / Password123!');
+    console.log('Employer: suresh.employer / Password123!');
 
   } catch (error) {
     console.error('❌ Error seeding database:', error);

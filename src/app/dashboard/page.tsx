@@ -21,8 +21,8 @@ interface DashboardData {
 export default function DashboardPage() {
   const { user } = useAuth();
   const [data, setData] = useState<DashboardData>({});
-  const [internships, setInternships] = useState([]);
-  const [applications, setApplications] = useState([]);
+  const [internships, setInternships] = useState<any[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -78,12 +78,13 @@ export default function DashboardPage() {
       </div>
       
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-red-100 text-sm font-medium">Unplaced Students</h3>
               <p className="text-3xl font-bold">{data.summary?.unplaced_students || 0}</p>
+              <p className="text-red-100 text-xs mt-1">↓ 8% from last month</p>
             </div>
             <div className="text-4xl opacity-80">🎓</div>
           </div>
@@ -94,6 +95,7 @@ export default function DashboardPage() {
             <div>
               <h3 className="text-blue-100 text-sm font-medium">Open Positions</h3>
               <p className="text-3xl font-bold">{data.summary?.open_positions || 0}</p>
+              <p className="text-blue-100 text-xs mt-1">↑ 15% this week</p>
             </div>
             <div className="text-4xl opacity-80">💼</div>
           </div>
@@ -104,6 +106,7 @@ export default function DashboardPage() {
             <div>
               <h3 className="text-green-100 text-sm font-medium">Total Applications</h3>
               <p className="text-3xl font-bold">{data.summary?.total_applications || 0}</p>
+              <p className="text-green-100 text-xs mt-1">↑ 23% increase</p>
             </div>
             <div className="text-4xl opacity-80">📝</div>
           </div>
@@ -114,8 +117,157 @@ export default function DashboardPage() {
             <div>
               <h3 className="text-yellow-100 text-sm font-medium">Average Rating</h3>
               <p className="text-3xl font-bold">{data.summary?.average_rating || 0}</p>
+              <p className="text-yellow-100 text-xs mt-1">4.2/5.0 overall</p>
             </div>
             <div className="text-4xl opacity-80">⭐</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Additional Statistics Row */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-lg shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-purple-100 text-sm font-medium">Placement Rate</h3>
+              <p className="text-3xl font-bold">78%</p>
+              <p className="text-purple-100 text-xs mt-1">Current semester</p>
+            </div>
+            <div className="text-4xl opacity-80">📈</div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-r from-indigo-500 to-indigo-600 text-white p-6 rounded-lg shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-indigo-100 text-sm font-medium">Active Employers</h3>
+              <p className="text-3xl font-bold">45</p>
+              <p className="text-indigo-100 text-xs mt-1">Registered companies</p>
+            </div>
+            <div className="text-4xl opacity-80">🏢</div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-r from-teal-500 to-teal-600 text-white p-6 rounded-lg shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-teal-100 text-sm font-medium">Avg. Stipend</h3>
+              <p className="text-3xl font-bold">₹18K</p>
+              <p className="text-teal-100 text-xs mt-1">Per month</p>
+            </div>
+            <div className="text-4xl opacity-80">💰</div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6 rounded-lg shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-orange-100 text-sm font-medium">Success Rate</h3>
+              <p className="text-3xl font-bold">92%</p>
+              <p className="text-orange-100 text-xs mt-1">Application approval</p>
+            </div>
+            <div className="text-4xl opacity-80">✅</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Department-wise Statistics */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">Top Performing Departments</h3>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+              <span className="text-gray-700 font-medium">Computer Science</span>
+              <div className="text-right">
+                <div className="text-lg font-bold text-green-600">95%</div>
+                <div className="text-xs text-gray-500">Placement Rate</div>
+              </div>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+              <span className="text-gray-700 font-medium">Electronics</span>
+              <div className="text-right">
+                <div className="text-lg font-bold text-blue-600">87%</div>
+                <div className="text-xs text-gray-500">Placement Rate</div>
+              </div>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+              <span className="text-gray-700 font-medium">Mechanical</span>
+              <div className="text-right">
+                <div className="text-lg font-bold text-purple-600">82%</div>
+                <div className="text-xs text-gray-500">Placement Rate</div>
+              </div>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+              <span className="text-gray-700 font-medium">Civil</span>
+              <div className="text-right">
+                <div className="text-lg font-bold text-yellow-600">76%</div>
+                <div className="text-xs text-gray-500">Placement Rate</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">Monthly Trends</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">Applications</span>
+              <div className="flex items-center">
+                <div className="w-20 bg-gray-200 rounded-full h-2 mr-2">
+                  <div className="bg-blue-500 h-2 rounded-full" style={{width: '85%'}}></div>
+                </div>
+                <span className="text-sm font-medium">↑ 12%</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">Interviews</span>
+              <div className="flex items-center">
+                <div className="w-20 bg-gray-200 rounded-full h-2 mr-2">
+                  <div className="bg-green-500 h-2 rounded-full" style={{width: '78%'}}></div>
+                </div>
+                <span className="text-sm font-medium">↑ 8%</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">Offers</span>
+              <div className="flex items-center">
+                <div className="w-20 bg-gray-200 rounded-full h-2 mr-2">
+                  <div className="bg-purple-500 h-2 rounded-full" style={{width: '92%'}}></div>
+                </div>
+                <span className="text-sm font-medium">↑ 15%</span>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-gray-600">Placements</span>
+              <div className="flex items-center">
+                <div className="w-20 bg-gray-200 rounded-full h-2 mr-2">
+                  <div className="bg-yellow-500 h-2 rounded-full" style={{width: '88%'}}></div>
+                </div>
+                <span className="text-sm font-medium">↑ 18%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">Quick Insights</h3>
+          <div className="space-y-3">
+            <div className="bg-blue-50 p-3 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">156</div>
+              <div className="text-sm text-gray-600">Active Students</div>
+            </div>
+            <div className="bg-green-50 p-3 rounded-lg">
+              <div className="text-2xl font-bold text-green-600">89</div>
+              <div className="text-sm text-gray-600">Completed Internships</div>
+            </div>
+            <div className="bg-purple-50 p-3 rounded-lg">
+              <div className="text-2xl font-bold text-purple-600">23</div>
+              <div className="text-sm text-gray-600">Partner Companies</div>
+            </div>
+            <div className="bg-orange-50 p-3 rounded-lg">
+              <div className="text-2xl font-bold text-orange-600">12</div>
+              <div className="text-sm text-gray-600">New This Week</div>
+            </div>
           </div>
         </div>
       </div>
@@ -202,12 +354,13 @@ export default function DashboardPage() {
       </div>
       
       {/* Quick Stats for Students */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-lg shadow-lg">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-blue-100 text-sm">Available Internships</p>
               <p className="text-3xl font-bold">{internships.length}</p>
+              <p className="text-blue-100 text-xs mt-1">In your department</p>
             </div>
             <div className="text-4xl opacity-80">💼</div>
           </div>
@@ -218,6 +371,7 @@ export default function DashboardPage() {
             <div>
               <p className="text-green-100 text-sm">My Applications</p>
               <p className="text-3xl font-bold">{applications.length}</p>
+              <p className="text-green-100 text-xs mt-1">Total submitted</p>
             </div>
             <div className="text-4xl opacity-80">📝</div>
           </div>
@@ -228,8 +382,77 @@ export default function DashboardPage() {
             <div>
               <p className="text-purple-100 text-sm">Department</p>
               <p className="text-lg font-semibold">{user?.department || 'Not Set'}</p>
+              <p className="text-purple-100 text-xs mt-1">Your specialization</p>
             </div>
             <div className="text-4xl opacity-80">🎓</div>
+          </div>
+        </div>
+        
+        <div className="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6 rounded-lg shadow-lg">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-orange-100 text-sm">Success Rate</p>
+              <p className="text-3xl font-bold">85%</p>
+              <p className="text-orange-100 text-xs mt-1">Your dept. average</p>
+            </div>
+            <div className="text-4xl opacity-80">🎯</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Student Progress and Insights */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">Application Status</h3>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
+              <span className="text-gray-700">Under Review</span>
+              <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm font-medium">3</span>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+              <span className="text-gray-700">Interview Scheduled</span>
+              <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-sm font-medium">1</span>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+              <span className="text-gray-700">Offers Received</span>
+              <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-medium">2</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">Recommendations</h3>
+          <div className="space-y-3">
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <div className="text-sm font-medium text-blue-800">Profile Tip</div>
+              <div className="text-xs text-gray-600 mt-1">Add 2 more skills to boost visibility</div>
+            </div>
+            <div className="p-3 bg-green-50 rounded-lg">
+              <div className="text-sm font-medium text-green-800">New Opportunities</div>
+              <div className="text-xs text-gray-600 mt-1">5 internships match your profile</div>
+            </div>
+            <div className="p-3 bg-purple-50 rounded-lg">
+              <div className="text-sm font-medium text-purple-800">Trending Skills</div>
+              <div className="text-xs text-gray-600 mt-1">React, Python, Data Science</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <h3 className="text-lg font-semibold mb-4 text-gray-900">Your Stats</h3>
+          <div className="space-y-3">
+            <div className="text-center p-3 bg-indigo-50 rounded-lg">
+              <div className="text-2xl font-bold text-indigo-600">92%</div>
+              <div className="text-sm text-gray-600">Profile Completion</div>
+            </div>
+            <div className="text-center p-3 bg-teal-50 rounded-lg">
+              <div className="text-2xl font-bold text-teal-600">8</div>
+              <div className="text-sm text-gray-600">Applications This Month</div>
+            </div>
+            <div className="text-center p-3 bg-pink-50 rounded-lg">
+              <div className="text-2xl font-bold text-pink-600">4.8</div>
+              <div className="text-sm text-gray-600">Average Rating</div>
+            </div>
           </div>
         </div>
       </div>

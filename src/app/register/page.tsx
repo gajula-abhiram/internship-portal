@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { authApi, handleApiError } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
@@ -19,6 +20,9 @@ export default function RegisterPage() {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordFocused, setPasswordFocused] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
 
@@ -31,8 +35,22 @@ export default function RegisterPage() {
       return;
     }
 
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
+    // Validate password requirements
+    const passwordErrors = [];
+    if (formData.password.length < 8) passwordErrors.push('at least 8 characters');
+    if (!/[A-Z]/.test(formData.password)) passwordErrors.push('one uppercase letter');
+    if (!/[a-z]/.test(formData.password)) passwordErrors.push('one lowercase letter');
+    if (!/\d/.test(formData.password)) passwordErrors.push('one number');
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(formData.password)) passwordErrors.push('one special character');
+    
+    if (passwordErrors.length > 0) {
+      setError(`Password must contain ${passwordErrors.join(', ')}`);
+      return;
+    }
+
+    // Validate university email
+    if (!formData.email.includes('.edu') && !formData.email.includes('.ac.') && !formData.email.includes('university')) {
+      setError('Please use your institutional/university email address');
       return;
     }
 
@@ -99,7 +117,7 @@ export default function RegisterPage() {
                 id="role"
                 name="role"
                 required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                 value={formData.role}
                 onChange={(e) => setFormData({ ...formData, role: e.target.value })}
               >
@@ -119,7 +137,7 @@ export default function RegisterPage() {
                 name="name"
                 type="text"
                 required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Enter your full name"
@@ -135,7 +153,7 @@ export default function RegisterPage() {
                 name="username"
                 type="text"
                 required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 placeholder="Enter your username"
@@ -144,18 +162,21 @@ export default function RegisterPage() {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email
+                Email (University/Institutional Email)
               </label>
               <input
                 id="email"
                 name="email"
                 type="email"
                 required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="Enter your email"
+                placeholder="your.name@university.edu"
               />
+              <p className="mt-1 text-xs text-gray-500">
+                Please use your institutional email address (.edu, .ac.in, university domain)
+              </p>
             </div>
 
             {(formData.role === 'STUDENT' || formData.role === 'STAFF' || formData.role === 'MENTOR') && (
@@ -167,7 +188,7 @@ export default function RegisterPage() {
                   id="department"
                   name="department"
                   required
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                   value={formData.department}
                   onChange={(e) => setFormData({ ...formData, department: e.target.value })}
                 >
@@ -187,7 +208,7 @@ export default function RegisterPage() {
                 <select
                   id="current_semester"
                   name="current_semester"
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                   value={formData.current_semester}
                   onChange={(e) => setFormData({ ...formData, current_semester: e.target.value })}
                 >
@@ -203,32 +224,93 @@ export default function RegisterPage() {
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
                 Password
               </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="Enter your password"
-              />
+              <div className="relative">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  className="mt-1 block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onFocus={() => setPasswordFocused(true)}
+                  placeholder="Enter your password"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? (
+                    <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5 text-gray-400" />
+                  )}
+                </button>
+              </div>
+              {passwordFocused && (
+                <div className="mt-2 text-xs text-gray-600">
+                  <p className="font-medium">Password must contain:</p>
+                  <ul className="list-disc ml-4 space-y-1">
+                    <li className={formData.password.length >= 8 ? 'text-green-600' : 'text-gray-600'}>
+                      At least 8 characters
+                    </li>
+                    <li className={/[A-Z]/.test(formData.password) ? 'text-green-600' : 'text-gray-600'}>
+                      One uppercase letter
+                    </li>
+                    <li className={/[a-z]/.test(formData.password) ? 'text-green-600' : 'text-gray-600'}>
+                      One lowercase letter
+                    </li>
+                    <li className={/\d/.test(formData.password) ? 'text-green-600' : 'text-gray-600'}>
+                      One number
+                    </li>
+                    <li className={/[!@#$%^&*(),.?":{}|<>]/.test(formData.password) ? 'text-green-600' : 'text-gray-600'}>
+                      One special character (!@#$%^&*)
+                    </li>
+                  </ul>
+                </div>
+              )}
             </div>
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">
                 Confirm Password
               </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                required
-                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-                value={formData.confirmPassword}
-                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                placeholder="Confirm your password"
-              />
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  required
+                  className="mt-1 block w-full px-3 py-2 pr-10 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-400"
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                  placeholder="Confirm your password"
+                />
+                <button
+                  type="button"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <EyeSlashIcon className="h-5 w-5 text-gray-400" />
+                  ) : (
+                    <EyeIcon className="h-5 w-5 text-gray-400" />
+                  )}
+                </button>
+              </div>
+              {formData.confirmPassword && (
+                <p className={`mt-1 text-xs ${
+                  formData.password === formData.confirmPassword 
+                    ? 'text-green-600' 
+                    : 'text-red-600'
+                }`}>
+                  {formData.password === formData.confirmPassword 
+                    ? '✓ Passwords match' 
+                    : '✗ Passwords do not match'
+                  }
+                </p>
+              )}
             </div>
           </div>
 

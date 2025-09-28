@@ -5,10 +5,9 @@ import { ProfileManager } from '@/lib/profile-manager';
 
 const profileManager = new ProfileManager();
 
-export async function GET(request: NextRequest) {
+export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const url = new URL(request.url);
-    const userId = url.pathname.split('/').pop();
+    const { id: userId } = await context.params;
     
     if (!userId || isNaN(Number(userId))) {
       return NextResponse.json({ error: 'Invalid user ID' }, { status: 400 });
@@ -47,8 +46,10 @@ export async function GET(request: NextRequest) {
   }
 }
 
-export async function PUT(request: NextRequest) {
+export async function PUT(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
+    const { id: userId } = await context.params;
+    
     const authHeader = request.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Authentication required' }, { status: 401 });

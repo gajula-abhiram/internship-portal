@@ -44,8 +44,16 @@ export default function InternshipsPage() {
         const data = await internshipsApi.getAll();
         setInternships(data);
         setFilteredInternships(data);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to fetch internships:', error);
+        // Handle authentication errors gracefully
+        if (error.message && (error.message.includes('401') || error.message.includes('Unauthorized'))) {
+          console.log('Authentication required, but internships should be publicly accessible');
+          // You could show a message or redirect to login, but internships should be public
+        }
+        // For now, we'll just show an empty list if there's an error
+        setInternships([]);
+        setFilteredInternships([]);
       } finally {
         setLoading(false);
       }

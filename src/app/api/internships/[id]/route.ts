@@ -3,19 +3,21 @@ import { getDatabase } from '@/lib/database';
 import { withAuth, ApiResponse, AuthenticatedRequest } from '@/lib/middleware';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 /**
  * GET /api/internships/[id]
  * Get specific internship by ID
+ * Public endpoint - authentication optional
  */
-export const GET = withAuth(async (req: AuthenticatedRequest, { params }: RouteParams) => {
+export async function GET(req: NextRequest, context: RouteParams) {
   try {
     const db = getDatabase();
-    const internshipId = parseInt(params.id);
+    const { id } = await context.params;
+    const internshipId = parseInt(id);
 
     if (isNaN(internshipId)) {
       return ApiResponse.error('Invalid internship ID');
@@ -60,13 +62,13 @@ export const GET = withAuth(async (req: AuthenticatedRequest, { params }: RouteP
     console.error('Get internship error:', error);
     return ApiResponse.serverError('Failed to get internship');
   }
-}, ['STUDENT', 'STAFF', 'MENTOR', 'EMPLOYER']);
+}
 
 /**
  * PUT /api/internships/[id]
  * Update internship (staff only)
  */
-export const PUT = withAuth(async (req: AuthenticatedRequest, context: { params: { id: string } }) => {
+export const PUT = withAuth(async (req: AuthenticatedRequest, context: RouteParams) => {
   try {
     const body = await req.json();
     const { title, description, required_skills, eligible_departments, stipend_min, stipend_max, is_placement, is_active } = body;
@@ -135,10 +137,11 @@ export const PUT = withAuth(async (req: AuthenticatedRequest, context: { params:
  * DELETE /api/internships/[id]
  * Delete internship (staff only)
  */
-export const DELETE = withAuth(async (req: AuthenticatedRequest, context: { params: { id: string } }) => {
+export const DELETE = withAuth(async (req: AuthenticatedRequest, context: RouteParams) => {
   try {
     const user = req.user!;
-    const internshipId = parseInt(context.params.id);
+    const { id } = await context.params;
+    const internshipId = parseInt(id);
 
     if (isNaN(internshipId)) {
       return ApiResponse.error('Invalid internship ID');

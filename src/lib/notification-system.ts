@@ -256,7 +256,7 @@ export class NotificationService {
             ${notification.action_url ? `<a href="${notification.action_url}" class="button">View Details</a>` : ''}
           </div>
           <div class="footer">
-            <p>Rajasthan Technical University - Internship & Placement Portal</p>
+            <p>Technical University - Internship & Placement Portal</p>
             <p><small>This is an automated notification. Please do not reply to this email.</small></p>
           </div>
         </div>

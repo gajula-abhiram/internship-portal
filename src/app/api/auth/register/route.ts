@@ -79,10 +79,18 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate email domain for institutional accounts
-    const allowedEmailDomains = ['rtu.ac.in', 'jec.ac.in', 'university.edu'];
-    const emailDomain = email.split('@')[1];
-    if (!allowedEmailDomains.includes(emailDomain)) {
-      return ApiResponse.error('Please use your institutional email address', 400);
+    // Allow common university domains and educational institutions
+    const emailDomain = email.toLowerCase().split('@')[1];
+    const isUniversityEmail = 
+      emailDomain.includes('.edu') || 
+      emailDomain.includes('.ac.') || 
+      emailDomain.includes('university') ||
+      emailDomain.includes('college') ||
+      emailDomain.includes('.edu.') ||
+      ['rtu.ac.in', 'jec.ac.in', 'iit.ac.in', 'nit.ac.in', 'iiit.ac.in'].some(domain => emailDomain.endsWith(domain));
+    
+    if (!isUniversityEmail) {
+      return ApiResponse.error('Please use your institutional/university email address (.edu, .ac.in, university domain)', 400);
     }
 
     const queries = getDbQueries();

@@ -8,13 +8,20 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
     "seed": "node scripts/seed.js",
     "generate-secrets": "node scripts/generate-secrets.js",
     "db:init": "node -e \"const db = require('better-sqlite3')('./internship.db'); console.log('Database initialized');\"",
     "deploy:vercel": "npm run build && vercel --prod",
-    "health-check": "curl -f http://localhost:3000/api/health || echo 'Health check failed'"
+    "deploy:preview": "npm run build && vercel",
+    "health-check": "curl -f http://localhost:3000/api/health || echo 'Health check failed'",
+    "prestart": "npm run build",
+    "postinstall": "npm run generate-secrets",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@heroicons/react": "^2.2.0",
     "@tailwindcss/postcss": "^4.1.13",
     "autoprefixer": "^10.4.21",
     "bcryptjs": "^2.4.3",

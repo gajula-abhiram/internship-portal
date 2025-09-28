@@ -242,9 +242,12 @@ export default function ApplicationsPage() {
                 <div className="flex-1">
                   <div className="flex items-start justify-between mb-4">
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      <Link 
+                        href={`/applications/${application.id}`}
+                        className="text-xl font-semibold text-gray-900 mb-2 hover:text-blue-600 transition-colors"
+                      >
                         {application.internship_title}
-                      </h3>
+                      </Link>
                       {user?.role !== 'STUDENT' && (
                         <div className="text-sm text-gray-600 mb-2">
                           <p><strong>Student:</strong> {application.student_name}</p>
@@ -317,19 +320,20 @@ export default function ApplicationsPage() {
                     </>
                   )}
                   
+                  <Link
+                    href={`/applications/${application.id}`}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                  >
+                    View Details
+                  </Link>
+
                   {user?.role === 'STUDENT' && (
                     <Link
                       href={`/internships/${application.internship_id}`}
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium transition-colors"
+                      className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors"
                     >
                       View Internship
                     </Link>
-                  )}
-
-                  {(user?.role === 'STAFF' || user?.role === 'EMPLOYER') && (
-                    <button className="border border-gray-300 text-gray-700 px-4 py-2 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors">
-                      View Details
-                    </button>
                   )}
                 </div>
               </div>

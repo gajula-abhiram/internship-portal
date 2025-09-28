@@ -18,7 +18,24 @@ A modern internship and placement management system built with Next.js 15 and Ty
 - **Database**: SQLite (local), In-memory (production demo)
 - **Deployment**: Vercel
 
-## Getting Started
+## Quick Start Options
+
+### 🌐 Deploy to Production (5 minutes)
+
+**Best for**: Demo, production use, sharing with others
+
+1. **Fork this repository** on GitHub
+2. **Import to Vercel**: [vercel.com/new](https://vercel.com/new)
+3. **Set environment variables**:
+   - `JWT_SECRET`: Generate a secure random string
+   - `NEXTAUTH_SECRET`: Another secure random string
+4. **Deploy**: Automatic deployment on every push!
+
+➡️ [**Full deployment guide**](./VERCEL-GITHUB-SETUP.md)
+
+### 💻 Local Development
+
+**Best for**: Development, customization, testing
 
 ### Prerequisites
 
@@ -65,11 +82,58 @@ A modern internship and placement management system built with Next.js 15 and Ty
 
 ## Deployment
 
-This application is configured for easy deployment on Vercel:
+### 🚀 Deploy to Vercel via GitHub (Recommended)
 
-1. Connect your GitHub repository to Vercel
-2. Set the `JWT_SECRET` environment variable
-3. Deploy automatically on every push
+This application is fully configured for automated deployment via GitHub + Vercel integration.
+
+#### Quick Deploy Steps:
+
+1. **Fork/Clone to GitHub**
+   ```bash
+   git clone <your-repo>
+   cd internship-portal
+   git remote set-url origin https://github.com/YOUR_USERNAME/internship-portal.git
+   git push -u origin main
+   ```
+
+2. **Connect to Vercel**
+   - Go to [vercel.com](https://vercel.com) and sign in with GitHub
+   - Click "Add New Project" and import your repository
+   - Vercel will auto-detect Next.js framework settings
+
+3. **Configure Environment Variables in Vercel**
+   ```bash
+   JWT_SECRET=your-32-character-secret-here
+   NEXTAUTH_SECRET=another-32-character-secret
+   NODE_ENV=production
+   DATABASE_URL=memory://
+   ENABLE_MEMORY_DB=true
+   ```
+
+4. **Set up GitHub Actions (Optional)**
+   - Add these secrets in GitHub Repository Settings → Secrets:
+     - `VERCEL_TOKEN` (from Vercel dashboard)
+     - `VERCEL_ORG_ID` (from `.vercel/project.json`)
+     - `VERCEL_PROJECT_ID` (from `.vercel/project.json`)
+
+5. **Deploy**
+   - Push to main branch triggers automatic deployment
+   - Pull requests create preview deployments
+   - Monitor deployment at your Vercel dashboard
+
+#### 📋 Deployment Resources:
+- **Setup Guide**: [`VERCEL-GITHUB-SETUP.md`](./VERCEL-GITHUB-SETUP.md)
+- **Deployment Checklist**: [`DEPLOYMENT-CHECKLIST.md`](./DEPLOYMENT-CHECKLIST.md)
+- **Production Config**: [`.env.production`](./.env.production)
+
+#### Manual Deployment:
+For manual deployments:
+```bash
+npm run deploy:vercel  # Deploy to production
+npm run deploy:preview # Deploy preview
+```
+
+---
 
 ## License
 

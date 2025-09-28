@@ -6,10 +6,11 @@ import { withAuth, ApiResponse, AuthenticatedRequest } from '@/lib/middleware';
  * PUT /api/applications/[id]/reject
  * Reject application (mentors only)
  */
-export const PUT = withAuth(async (req: AuthenticatedRequest, context: { params: { id: string } }) => {
+export const PUT = withAuth(async (req: AuthenticatedRequest, context: { params: Promise<{ id: string }> }) => {
   try {
     const user = req.user!;
-    const applicationId = parseInt(context.params.id);
+    const { id } = await context.params;
+    const applicationId = parseInt(id);
 
     if (isNaN(applicationId)) {
       return ApiResponse.error('Invalid application ID');

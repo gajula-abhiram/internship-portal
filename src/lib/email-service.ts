@@ -179,7 +179,7 @@ export class EmailService {
             <div class="container">
               <div class="header">
                 <h1>Application Submitted Successfully</h1>
-                <p>Rajasthan Technical University - Internship Portal</p>
+                <p>Technical University - Internship Portal</p>
               </div>
               <div class="content">
                 <p>Dear {{student_name}},</p>
@@ -357,7 +357,7 @@ export class EmailService {
                 
                 <p>Congratulations once again on your achievement!</p>
                 
-                <p>Best regards,<br>Placement Cell<br>Rajasthan Technical University</p>
+                <p>Best regards,<br>Placement Cell<br>Technical University</p>
               </div>
             </div>
           </body>

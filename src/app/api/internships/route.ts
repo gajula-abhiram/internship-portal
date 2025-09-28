@@ -5,13 +5,27 @@ import { withAuth, ApiResponse, validateRequiredFields, AuthenticatedRequest } f
 /**
  * GET /api/internships
  * Get all active internships (filtered by student's department if student)
+ * Public endpoint - authentication optional
  */
-export const GET = withAuth(async (req: AuthenticatedRequest) => {
+export async function GET(req: NextRequest) {
   try {
     const db = getDatabase();
-    const user = req.user!;
     const { searchParams } = new URL(req.url);
     const department = searchParams.get('department');
+
+    // Try to get user from token (optional)
+    let user = null;
+    try {
+      const authHeader = req.headers.get('authorization');
+      if (authHeader?.startsWith('Bearer ')) {
+        const token = authHeader.substring(7);
+        const { verifyToken } = await import('@/lib/auth');
+        user = verifyToken(token);
+      }
+    } catch (error) {
+      // Authentication failed, but continue as public request
+      console.log('Public access to internships');
+    }
 
     let query = `
       SELECT i.*, u.name as posted_by_name 
@@ -21,8 +35,8 @@ export const GET = withAuth(async (req: AuthenticatedRequest) => {
     `;
     let params: any[] = [];
 
-    // Filter by department for students
-    if (user.role === 'STUDENT' && user.department) {
+    // Filter by department for authenticated students
+    if (user && user.role === 'STUDENT' && user.department) {
       query += ` AND json_extract(i.eligible_departments, '$') LIKE ?`;
       params.push(`%"${user.department}"%`);
     } else if (department) {
@@ -50,7 +64,7 @@ export const GET = withAuth(async (req: AuthenticatedRequest) => {
     console.error('Get internships error:', error);
     return ApiResponse.serverError('Failed to get internships');
   }
-}, ['STUDENT', 'STAFF', 'MENTOR', 'EMPLOYER']);
+}
 
 /**
  * POST /api/internships

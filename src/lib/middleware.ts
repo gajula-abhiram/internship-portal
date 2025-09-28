@@ -124,6 +124,9 @@ export function validatePassword(password: string): string | null {
   if (!/(?=.*\d)/.test(password)) {
     return 'Password must contain at least one number';
   }
+  if (!/(?=.*[!@#$%^&*(),.?":{}|<>])/.test(password)) {
+    return 'Password must contain at least one special character (!@#$%^&*(),.?":{}|<>)';
+  }
   return null;
 }
 
