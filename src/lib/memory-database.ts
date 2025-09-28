@@ -60,49 +60,124 @@ let feedback: Feedback[] = [];
 // Initialize with sample data
 function initializeSampleData() {
   if (users.length === 0) {
-    // Add sample users
-    users = [
-      {
-        id: 1,
-        username: 'admin',
-        password_hash: '$2a$10$8YJZ9YQGj7qXUcNZj7QKrOw1LkC6K7z0.Br9SBFZwX4X4X4X4X4X4u', // password: admin123
-        role: 'STAFF',
-        name: 'Admin User',
-        email: 'admin@university.edu',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      },
-      {
-        id: 2,
-        username: 'student1',
-        password_hash: '$2a$10$8YJZ9YQGj7qXUcNZj7QKrOw1LkC6K7z0.Br9SBFZwX4X4X4X4X4X4u', // password: student123
-        role: 'STUDENT',
-        name: 'John Doe',
-        email: 'john@university.edu',
-        department: 'Computer Science',
-        current_semester: 6,
-        skills: JSON.stringify(['JavaScript', 'React', 'Node.js']),
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }
-    ];
+    // Import bcrypt to hash passwords
+    import('bcryptjs').then(async (bcrypt) => {
+      const defaultPasswordHash = await bcrypt.hash('Password123!', 12);
+      
+      // Add default users with the same credentials as the SQLite database
+      users = [
+        {
+          id: 1,
+          username: 'admin',
+          password_hash: defaultPasswordHash,
+          role: 'STAFF',
+          name: 'Admin User',
+          email: 'admin@example.com',
+          department: 'Computer Science',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 2,
+          username: 'student',
+          password_hash: defaultPasswordHash,
+          role: 'STUDENT',
+          name: 'Student User',
+          email: 'student@example.com',
+          department: 'Computer Science',
+          current_semester: 6,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 3,
+          username: 'mentor',
+          password_hash: defaultPasswordHash,
+          role: 'MENTOR',
+          name: 'Mentor User',
+          email: 'mentor@example.com',
+          department: 'Computer Science',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 4,
+          username: 'employer',
+          password_hash: defaultPasswordHash,
+          role: 'EMPLOYER',
+          name: 'Employer User',
+          email: 'employer@example.com',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        // Rajasthan-specific demo users
+        {
+          id: 5,
+          username: 'amit.sharma',
+          password_hash: defaultPasswordHash,
+          role: 'STUDENT',
+          name: 'Amit Sharma',
+          email: 'amit.sharma@rtu.ac.in',
+          department: 'Computer Science',
+          current_semester: 6,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 6,
+          username: 'rajesh.staff',
+          password_hash: defaultPasswordHash,
+          role: 'STAFF',
+          name: 'Dr. Rajesh Gupta',
+          email: 'rajesh.gupta@rtu.ac.in',
+          department: 'Computer Science',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 7,
+          username: 'vikram.mentor',
+          password_hash: defaultPasswordHash,
+          role: 'MENTOR',
+          name: 'Dr. Vikram Singh',
+          email: 'vikram.singh@rtu.ac.in',
+          department: 'Computer Science',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        {
+          id: 8,
+          username: 'suresh.employer',
+          password_hash: defaultPasswordHash,
+          role: 'EMPLOYER',
+          name: 'Mr. Suresh Agarwal',
+          email: 'suresh@jaipurit.com',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ];
 
-    // Add sample internships
-    internships = [
-      {
-        id: 1,
-        title: 'Frontend Developer Intern',
-        description: 'Work on exciting React projects with our development team.',
-        required_skills: JSON.stringify(['React', 'JavaScript', 'CSS']),
-        eligible_departments: JSON.stringify(['Computer Science', 'Information Technology']),
-        stipend_min: 15000,
-        stipend_max: 25000,
-        is_placement: false,
-        posted_by: 1,
-        is_active: true,
-        created_at: new Date().toISOString()
-      }
-    ];
+      // Add sample internships
+      internships = [
+        {
+          id: 1,
+          title: 'Frontend Developer Intern',
+          description: 'Work on exciting React projects with our development team.',
+          required_skills: JSON.stringify(['React', 'JavaScript', 'CSS']),
+          eligible_departments: JSON.stringify(['Computer Science', 'Information Technology']),
+          stipend_min: 15000,
+          stipend_max: 25000,
+          is_placement: false,
+          posted_by: 1,
+          is_active: true,
+          created_at: new Date().toISOString()
+        }
+      ];
+      
+      console.log('Memory database initialized with default users');
+    }).catch((error) => {
+      console.error('Error initializing memory database:', error);
+    });
   }
 }
 
@@ -219,29 +294,29 @@ export function getMemoryDatabase() {
     },
     
     getApplicationsByStudent: {
-      all: (student_id: number) => applications
-        .filter(a => a.student_id === student_id)
-        .map(a => {
-          const internship = internships.find(i => i.id === a.internship_id);
-          return {
-            ...a,
-            internship_title: internship?.title || 'Unknown',
-            internship_description: internship?.description || ''
-          };
-        })
-        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      all: (student_id: number) => {
+        return applications
+          .filter(a => a.student_id === student_id)
+          .map(a => {
+            const internship = internships.find(i => i.id === a.internship_id);
+            return {
+              ...a,
+              internship_title: internship?.title || 'Unknown',
+              internship_description: internship?.description || 'No description'
+            };
+          })
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      }
     },
     
     getApplicationsForMentor: {
       all: (mentor_id: number) => {
-        const mentor = users.find(u => u.id === mentor_id);
-        if (!mentor) return [];
-        
+        // Simplified implementation - in real app, would filter by department
         return applications
           .filter(a => a.status === 'APPLIED')
           .map(a => {
-            const student = users.find(u => u.id === a.student_id);
             const internship = internships.find(i => i.id === a.internship_id);
+            const student = users.find(u => u.id === a.student_id);
             return {
               ...a,
               internship_title: internship?.title || 'Unknown',
@@ -249,7 +324,42 @@ export function getMemoryDatabase() {
               student_department: student?.department || 'Unknown'
             };
           })
-          .filter(a => a.student_department === mentor.department)
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      }
+    },
+    
+    getAllApplications: {
+      all: () => {
+        return applications.map(a => {
+          const internship = internships.find(i => i.id === a.internship_id);
+          const student = users.find(u => u.id === a.student_id);
+          const mentor = a.mentor_id ? users.find(u => u.id === a.mentor_id) : null;
+          return {
+            ...a,
+            internship_title: internship?.title || 'Unknown',
+            student_name: student?.name || 'Unknown',
+            student_department: student?.department || 'Unknown',
+            mentor_name: mentor?.name || null
+          };
+        }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      }
+    },
+    
+    getApplicationsByInternship: {
+      all: (internship_id: number) => {
+        return applications
+          .filter(a => a.internship_id === internship_id)
+          .map(a => {
+            const student = users.find(u => u.id === a.student_id);
+            return {
+              ...a,
+              student_name: student?.name || 'Unknown',
+              student_department: student?.department || 'Unknown',
+              student_email: student?.email || 'Unknown',
+              student_skills: student?.skills || '[]',
+              student_resume: student?.resume || ''
+            };
+          })
           .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       }
     },
@@ -272,7 +382,7 @@ export function getMemoryDatabase() {
 
     // Feedback queries
     createFeedback: {
-      run: (application_id: number, supervisor_id: number, rating: number, comments: string) => {
+      run: (application_id: number, supervisor_id: number, rating: number, comments?: string) => {
         const newFeedback: Feedback = {
           id: feedback.length + 1,
           application_id,
@@ -287,39 +397,137 @@ export function getMemoryDatabase() {
     },
     
     getFeedbackByApplication: {
-      all: (application_id: number) => feedback
-        .filter(f => f.application_id === application_id)
-        .map(f => ({
-          ...f,
-          supervisor_name: users.find(u => u.id === f.supervisor_id)?.name || 'Unknown'
-        }))
+      all: (application_id: number) => {
+        return feedback
+          .filter(f => f.application_id === application_id)
+          .map(f => {
+            const supervisor = users.find(u => u.id === f.supervisor_id);
+            return {
+              ...f,
+              supervisor_name: supervisor?.name || 'Unknown'
+            };
+          });
+      }
+    },
+    
+    getAllFeedback: {
+      all: () => {
+        return feedback.map(f => {
+          const supervisor = users.find(u => u.id === f.supervisor_id);
+          const application = applications.find(a => a.id === f.application_id);
+          const student = application ? users.find(u => u.id === application.student_id) : null;
+          const internship = application ? internships.find(i => i.id === application.internship_id) : null;
+          
+          return {
+            ...f,
+            supervisor_name: supervisor?.name || 'Unknown',
+            student_id: student?.id || null,
+            student_name: student?.name || 'Unknown',
+            internship_title: internship?.title || 'Unknown'
+          };
+        }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      }
     },
 
     // Analytics queries
     getUnplacedStudentsCount: {
       get: () => {
-        const placedStudents = new Set(
+        const placedStudentIds = new Set(
           applications
-            .filter(a => ['OFFERED', 'COMPLETED'].includes(a.status))
+            .filter(a => a.status === 'OFFERED' || a.status === 'COMPLETED')
             .map(a => a.student_id)
         );
-        const totalStudents = users.filter(u => u.role === 'STUDENT').length;
-        return { count: totalStudents - placedStudents.size };
+        
+        const unplacedCount = users.filter(u => 
+          u.role === 'STUDENT' && !placedStudentIds.has(u.id)
+        ).length;
+        
+        return { count: unplacedCount };
       }
     },
     
     getApplicationStatusBreakdown: {
       all: () => {
-        const breakdown: { [key: string]: number } = {};
+        const statusCounts: Record<string, number> = {};
         applications.forEach(a => {
-          breakdown[a.status] = (breakdown[a.status] || 0) + 1;
+          statusCounts[a.status] = (statusCounts[a.status] || 0) + 1;
         });
-        return Object.entries(breakdown).map(([status, count]) => ({ status, count }));
+        
+        return Object.entries(statusCounts).map(([status, count]) => ({
+          status,
+          count
+        }));
       }
     },
     
     getOpenPositionsCount: {
-      get: () => ({ count: internships.filter(i => i.is_active).length })
+      get: () => {
+        const count = internships.filter(i => i.is_active).length;
+        return { count };
+      }
+    },
+    
+    getAverageFeedbackRating: {
+      get: () => {
+        if (feedback.length === 0) {
+          return { average_rating: 0, total_feedback: 0 };
+        }
+        
+        const totalRating = feedback.reduce((sum, f) => sum + f.rating, 0);
+        const average = totalRating / feedback.length;
+        
+        return { 
+          average_rating: parseFloat(average.toFixed(2)), 
+          total_feedback: feedback.length 
+        };
+      }
+    },
+    
+    getRecentApplications: {
+      all: (limit: number = 10) => {
+        return applications
+          .map(a => {
+            const internship = internships.find(i => i.id === a.internship_id);
+            const student = users.find(u => u.id === a.student_id);
+            return {
+              ...a,
+              internship_title: internship?.title || 'Unknown',
+              student_name: student?.name || 'Unknown',
+              student_department: student?.department || 'Unknown'
+            };
+          })
+          .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+          .slice(0, limit);
+      }
+    },
+    
+    getTopInternships: {
+      all: (limit: number = 5) => {
+        // Count applications per internship
+        const appCounts: Record<number, number> = {};
+        applications.forEach(a => {
+          appCounts[a.internship_id] = (appCounts[a.internship_id] || 0) + 1;
+        });
+        
+        return internships
+          .filter(i => i.is_active)
+          .map(i => {
+            const postedBy = users.find(u => u.id === i.posted_by);
+            return {
+              ...i,
+              posted_by_name: postedBy?.name || 'Unknown',
+              application_count: appCounts[i.id] || 0
+            };
+          })
+          .sort((a, b) => {
+            // Sort by application count first, then by creation date
+            if (b.application_count !== a.application_count) {
+              return b.application_count - a.application_count;
+            }
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          })
+          .slice(0, limit);
+      }
     }
   };
 }

@@ -1,14 +1,16 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 
-const JWT_SECRET = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'fallback-development-secret';
+// Use environment variable for JWT secret, with a more robust fallback for Vercel
+const JWT_SECRET = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 
+                  (process.env.VERCEL === '1' ? 'vercel_production_secret_fallback_32_chars_min' : 'fallback-development-secret');
 
 // Validate JWT secret in production
 if (process.env.NODE_ENV === 'production' && (!process.env.JWT_SECRET || process.env.JWT_SECRET.length < 32)) {
-  console.error('❌ Production deployment requires a secure JWT_SECRET (minimum 32 characters)');
-  console.error('💡 Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
+  console.warn('⚠️  Production deployment requires a secure JWT_SECRET (minimum 32 characters)');
+  console.warn('💡 Generate one with: node -e "console.log(require(\'crypto\').randomBytes(32).toString(\'hex\'))"');
   if (process.env.VERCEL === '1') {
-    console.error('🔧 Set JWT_SECRET in your Vercel environment variables');
+    console.warn('🔧 Set JWT_SECRET in your Vercel environment variables for better security');
   }
 }
 

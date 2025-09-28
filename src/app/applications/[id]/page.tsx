@@ -114,7 +114,11 @@ export default function ApplicationDetailPage() {
       }));
     }
 
-    return allSteps;
+    // Add rejected property to all steps for type consistency
+    return allSteps.map(step => ({
+      ...step,
+      rejected: false
+    }));
   };
 
   useEffect(() => {

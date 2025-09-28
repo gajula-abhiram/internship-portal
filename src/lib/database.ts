@@ -123,6 +123,60 @@ function initializeDatabase() {
     CREATE INDEX IF NOT EXISTS idx_internships_active ON internships(is_active);
     CREATE INDEX IF NOT EXISTS idx_feedback_application ON feedback(application_id);
   `);
+  
+  // Seed database with default users if empty
+  seedDatabaseIfEmpty();
+}
+
+// Seed database with default users if empty
+function seedDatabaseIfEmpty() {
+  const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
+  
+  if (userCount.count === 0) {
+    console.log('Seeding database with default users...');
+    
+    // Import bcrypt and hash password
+    import('bcryptjs').then(async (bcrypt) => {
+      const defaultPasswordHash = await bcrypt.hash('Password123!', 12);
+      
+      // Insert default users
+      const users = [
+        { username: 'admin', name: 'Admin User', email: 'admin@example.com', role: 'STAFF', department: 'Computer Science' },
+        { username: 'student', name: 'Student User', email: 'student@example.com', role: 'STUDENT', department: 'Computer Science', semester: 6 },
+        { username: 'mentor', name: 'Mentor User', email: 'mentor@example.com', role: 'MENTOR', department: 'Computer Science' },
+        { username: 'employer', name: 'Employer User', email: 'employer@example.com', role: 'EMPLOYER' },
+        // Rajasthan-specific demo users
+        { username: 'amit.sharma', name: 'Amit Sharma', email: 'amit.sharma@rtu.ac.in', role: 'STUDENT', department: 'Computer Science', semester: 6 },
+        { username: 'rajesh.staff', name: 'Dr. Rajesh Gupta', email: 'rajesh.gupta@rtu.ac.in', role: 'STAFF', department: 'Computer Science' },
+        { username: 'vikram.mentor', name: 'Dr. Vikram Singh', email: 'vikram.singh@rtu.ac.in', role: 'MENTOR', department: 'Computer Science' },
+        { username: 'suresh.employer', name: 'Mr. Suresh Agarwal', email: 'suresh@jaipurit.com', role: 'EMPLOYER' }
+      ];
+      
+      for (const user of users) {
+        try {
+          db.prepare(`
+            INSERT INTO users (username, password_hash, role, name, email, department, current_semester)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+          `).run(
+            user.username,
+            defaultPasswordHash,
+            user.role,
+            user.name,
+            user.email,
+            user.department || null,
+            user.semester || null
+          );
+          console.log(`Created user: ${user.username}`);
+        } catch (error) {
+          console.error(`Error creating user ${user.username}:`, error);
+        }
+      }
+      
+      console.log('Database seeding completed');
+    }).catch((error) => {
+      console.error('Error importing bcrypt for seeding:', error);
+    });
+  }
 }
 
 // Database query helpers

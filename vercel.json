@@ -12,7 +12,9 @@
   "env": {
     "VERCEL": "1",
     "VERCEL_ENV": "production",
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "ENABLE_MEMORY_DB": "true",
+    "DATABASE_URL": "memory://"
   },
   "headers": [
     {

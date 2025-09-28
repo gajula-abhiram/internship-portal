@@ -31,7 +31,7 @@ A modern internship and placement management system built with Next.js 15 and Ty
    - `NEXTAUTH_SECRET`: Another secure random string
 4. **Deploy**: Automatic deployment on every push!
 
-➡️ [**Full deployment guide**](./VERCEL-GITHUB-SETUP.md)
+➡️ [**Full deployment guide**](./VERCEL-DEPLOYMENT-GUIDE.md)
 
 ### 💻 Local Development
 
@@ -69,8 +69,10 @@ A modern internship and placement management system built with Next.js 15 and Ty
 
 ## Default Users
 
-- **Admin**: username: `admin`, password: `admin123`
-- **Student**: username: `student1`, password: `student123`
+- **Admin**: username: `admin`, password: `Password123!`
+- **Student**: username: `student`, password: `Password123!`
+- **Mentor**: username: `mentor`, password: `Password123!`
+- **Employer**: username: `employer`, password: `Password123!`
 
 ## API Endpoints
 
@@ -125,6 +127,7 @@ This application is fully configured for automated deployment via GitHub + Verce
 - **Setup Guide**: [`VERCEL-GITHUB-SETUP.md`](./VERCEL-GITHUB-SETUP.md)
 - **Deployment Checklist**: [`DEPLOYMENT-CHECKLIST.md`](./DEPLOYMENT-CHECKLIST.md)
 - **Production Config**: [`.env.production`](./.env.production)
+- **Deployment Guide**: [`VERCEL-DEPLOYMENT-GUIDE.md`](./VERCEL-DEPLOYMENT-GUIDE.md)
 
 #### Manual Deployment:
 For manual deployments:
@@ -239,20 +242,20 @@ This is a complete internship and placement management system built with Next.js
 After running the seed script, you can use these accounts:
 
 ### Students
-- **Username:** `amit.sharma` **Password:** `password123`
-- **Username:** `priya.singh` **Password:** `password123`
+- **Username:** `amit.sharma` **Password:** `Password123!`
+- **Username:** `priya.singh` **Password:** `Password123!`
 
 ### Staff (Placement Cell)
-- **Username:** `rajesh.staff` **Password:** `password123`
-- **Username:** `sunita.staff` **Password:** `password123`
+- **Username:** `rajesh.staff` **Password:** `Password123!`
+- **Username:** `sunita.staff` **Password:** `Password123!`
 
 ### Faculty Mentors
-- **Username:** `vikram.mentor` **Password:** `password123`
-- **Username:** `meera.mentor` **Password:** `password123`
+- **Username:** `vikram.mentor` **Password:** `Password123!`
+- **Username:** `meera.mentor` **Password:** `Password123!`
 
 ### Employers/Supervisors
-- **Username:** `suresh.employer` **Password:** `password123`
-- **Username:** `anita.employer` **Password:** `password123`
+- **Username:** `suresh.employer` **Password:** `Password123!`
+- **Username:** `anita.employer` **Password:** `Password123!`
 
 ---
 
@@ -387,7 +390,7 @@ internship-portal/
 - Use HTTPS in production (Vercel provides this automatically)
 
 ### Development
-- Default passwords are "password123" for all seeded users
+- Default passwords are "Password123!" for all seeded users
 - JWT secret is set to a default value in .env.local
 - Database is stored locally without encryption
 
