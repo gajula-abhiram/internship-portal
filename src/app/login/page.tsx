@@ -8,7 +8,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 export default function LoginPage() {
-  const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const [credentials, setCredentials] = useState({ username: 'amit.sharma', password: 'Password123!' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -198,6 +198,10 @@ export default function LoginPage() {
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
+        
+        <div className="mt-4 text-center text-xs text-gray-500">
+          <p>Student credentials (amit.sharma / Password123!) pre-filled for convenience</p>
+        </div>
 
         {/* Forgot Password Modal */}
         {showForgotPassword && (
