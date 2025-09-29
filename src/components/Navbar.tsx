@@ -20,9 +20,9 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <Link href="/" className="text-xl font-bold">
+              <span className="text-xl font-bold">
                 Internship Portal
-              </Link>
+              </span>
             </div>
             <div className="flex items-center space-x-4">
               {/* Loading placeholder */}
@@ -77,6 +77,9 @@ export default function Navbar() {
           { href: '/dashboard', label: 'Dashboard' },
           { href: '/internships', label: 'Internships' },
           { href: '/applications', label: 'My Applications' },
+          { href: '/tracker', label: 'Tracker' },
+          { href: '/calendar', label: 'Calendar' },
+          { href: '/chat', label: 'Chat' },
           { href: '/profile', label: 'Profile' },
         ];
       case 'STAFF':
@@ -85,18 +88,23 @@ export default function Navbar() {
           { href: '/internships', label: 'Internships' },
           { href: '/internships/manage', label: 'Manage Internships' },
           { href: '/applications', label: 'All Applications' },
+          { href: '/calendar', label: 'Calendar' },
           { href: '/analytics', label: 'Analytics' },
+          { href: '/reports', label: 'Reports' },
         ];
       case 'MENTOR':
         return [
           { href: '/dashboard', label: 'Dashboard' },
           { href: '/applications', label: 'Pending Approvals' },
+          { href: '/calendar', label: 'Calendar' },
+          { href: '/chat', label: 'Chat' },
           { href: '/profile', label: 'Profile' },
         ];
       case 'EMPLOYER':
         return [
           { href: '/dashboard', label: 'Dashboard' },
           { href: '/applications', label: 'Applications' },
+          { href: '/calendar', label: 'Calendar' },
           { href: '/feedback', label: 'Feedback' },
           { href: '/profile', label: 'Profile' },
         ];

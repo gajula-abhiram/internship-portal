@@ -3,6 +3,7 @@
 
 import { getDatabase } from './database';
 import { BadgeManager } from './badge-manager';
+import { CertificateGenerator } from './certificate-generator';
 
 export interface StudentProfile {
   id: number;
@@ -66,6 +67,7 @@ export class ProfileManager {
     employability: EmployabilityMetrics;
     badges: any[];
     stats: any;
+    certificates: any[];
   }> {
     try {
       // Get basic profile
@@ -83,12 +85,16 @@ export class ProfileManager {
       // Get profile statistics
       const stats = await this.getProfileStatistics(userId);
       
+      // Get certificates
+      const certificates = await CertificateGenerator.getUserCertificates(userId);
+      
       return {
         profile,
         completion,
         employability,
         badges,
-        stats
+        stats,
+        certificates
       };
     } catch (error) {
       console.error('Error getting student profile:', error);
@@ -147,6 +153,43 @@ export class ProfileManager {
     } catch (error) {
       console.error('Error updating profile:', error);
       return false;
+    }
+  }
+
+  /**
+   * Notify students about internships in other departments
+   */
+  async notifyCrossDepartmentInternships(userId: number): Promise<void> {
+    try {
+      const studentProfile = await this.getBasicProfile(userId);
+      
+      // Get internships from other departments
+      const crossDepartmentInternships = this.db.prepare(`
+        SELECT i.*, u.name as posted_by_name, u.department as company_department
+        FROM internships i
+        JOIN users u ON i.posted_by = u.id
+        WHERE i.is_active = 1
+        AND i.application_deadline > datetime('now')
+        AND u.department != ?
+        AND i.id NOT IN (
+          SELECT internship_id FROM applications WHERE student_id = ?
+        )
+        ORDER BY i.created_at DESC
+        LIMIT 5
+      `).all(studentProfile.department, userId) as any[];
+      
+      // If there are internships in other departments, notify the student
+      if (crossDepartmentInternships.length > 0) {
+        // For now, we'll just log this - in a real implementation, 
+        // this would send notifications to the student
+        console.log(`Found ${crossDepartmentInternships.length} internships in other departments for student ${userId}`);
+        
+        // In a real implementation, we would send notifications here
+        // For example:
+        // await NotificationService.notifyCrossDepartmentOpportunities(userId, crossDepartmentInternships);
+      }
+    } catch (error) {
+      console.error('Error checking cross-department internships:', error);
     }
   }
 
@@ -476,5 +519,12 @@ export class ProfileManager {
       ORDER BY u.employability_score DESC, badge_count DESC
       LIMIT ?
     `).all(department, limit);
+  }
+
+  /**
+   * Get certificates for user profile
+   */
+  async getUserCertificates(userId: number): Promise<any[]> {
+    return await CertificateGenerator.getUserCertificates(userId);
   }
 }

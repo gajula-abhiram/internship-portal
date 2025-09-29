@@ -364,6 +364,291 @@ export class EmailService {
           </html>
         `,
         text: 'Your completion certificate for {{internship_title}} is ready for download.'
+      },
+
+      deadline_reminder: {
+        subject: 'Application Deadline Reminder - {{internship_title}}',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+              .deadline-details { background: #f8d7da; padding: 20px; border-radius: 5px; margin: 20px 0; border-left: 5px solid #dc3545; }
+              .button { background: #dc3545; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 15px 0; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>⏰ Important Deadline Reminder</h1>
+                <p>Don't miss this opportunity!</p>
+              </div>
+              <div class="content">
+                <p>Dear {{student_name}},</p>
+                
+                <p>This is a reminder that the application deadline for <strong>{{internship_title}}</strong> at {{company_name}} is approaching {{deadline_time}}.</p>
+                
+                <div class="deadline-details">
+                  <h3>Important Details:</h3>
+                  <p><strong>Position:</strong> {{internship_title}}</p>
+                  <p><strong>Company:</strong> {{company_name}}</p>
+                  <p><strong>Deadline:</strong> {{deadline}}</p>
+                </div>
+                
+                <a href="{{portal_url}}/internships/{{internship_id}}" class="button">Apply Now</a>
+                
+                <p>Please ensure you complete your application before the deadline to be considered for this opportunity.</p>
+                
+                <p>Best regards,<br>Placement Cell<br>Technical University</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+        text: 'Reminder: The application deadline for {{internship_title}} at {{company_name}} is {{deadline}}. Please apply before the deadline.'
+      },
+
+      interview_reminder: {
+        subject: 'Interview Reminder - {{internship_title}}',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+              .interview-details { background: #e7f3ff; padding: 20px; border-radius: 5px; margin: 20px 0; }
+              .button { background: #6f42c1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 15px 0; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>📅 Interview Reminder</h1>
+                <p>Your upcoming interview</p>
+              </div>
+              <div class="content">
+                <p>Dear {{student_name}},</p>
+                
+                <p>This is a reminder about your upcoming interview for the <strong>{{internship_title}}</strong> position.</p>
+                
+                <div class="interview-details">
+                  <h3>Interview Details:</h3>
+                  <p><strong>Date & Time:</strong> {{interview_datetime}}</p>
+                  <p><strong>Company:</strong> {{company_name}}</p>
+                  <p><strong>Interviewer:</strong> {{interviewer_name}}</p>
+                  <p><strong>Mode:</strong> {{interview_mode}}</p>
+                  {{#if interview_link}}<p><strong>Meeting Link:</strong> <a href="{{interview_link}}">{{interview_link}}</a></p>{{/if}}
+                </div>
+                
+                <a href="{{portal_url}}/applications" class="button">View Application Details</a>
+                
+                <p>Please be prepared and arrive on time for your interview. Good luck!</p>
+                
+                <p>Best regards,<br>Placement Cell<br>Technical University</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+        text: 'Reminder: Your interview for {{internship_title}} at {{company_name}} is scheduled for {{interview_datetime}}. Please be prepared and arrive on time.'
+      },
+
+      approval_reminder: {
+        subject: 'Pending Application Approval - {{internship_title}}',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #17a2b8 0%, #e83e8c 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+              .application-details { background: #d1ecf1; padding: 20px; border-radius: 5px; margin: 20px 0; }
+              .button { background: #17a2b8; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 15px 0; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>📋 Pending Application Approval</h1>
+                <p>Action required</p>
+              </div>
+              <div class="content">
+                <p>Dear {{mentor_name}},</p>
+                
+                <p>You have a pending application that requires your review and approval.</p>
+                
+                <div class="application-details">
+                  <h3>Application Details:</h3>
+                  <p><strong>Student:</strong> {{student_name}}</p>
+                  <p><strong>Position:</strong> {{internship_title}}</p>
+                  <p><strong>Company:</strong> {{company_name}}</p>
+                  <p><strong>Submitted:</strong> {{submitted_date}}</p>
+                </div>
+                
+                <a href="{{portal_url}}/mentor/applications" class="button">Review Application</a>
+                
+                <p>Please review this application at your earliest convenience to avoid delays in the student's application process.</p>
+                
+                <p>Thank you,<br>Placement Cell<br>Technical University</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+        text: 'Reminder: You have a pending application for {{internship_title}} by {{student_name}} that requires your review and approval.'
+      },
+
+      feedback_reminder: {
+        subject: 'Feedback Request - {{student_name}} Internship Completion',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #28a745 0%, #e83e8c 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+              .feedback-details { background: #d4edda; padding: 20px; border-radius: 5px; margin: 20px 0; }
+              .button { background: #28a745; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 15px 0; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>📝 Feedback Request</h1>
+                <p>Help us improve our program</p>
+              </div>
+              <div class="content">
+                <p>Dear {{employer_name}},</p>
+                
+                <p>We hope the internship experience with {{student_name}} has been positive. We would appreciate your feedback on their performance.</p>
+                
+                <div class="feedback-details">
+                  <h3>Internship Details:</h3>
+                  <p><strong>Student:</strong> {{student_name}}</p>
+                  <p><strong>Position:</strong> {{internship_title}}</p>
+                  <p><strong>Company:</strong> {{company_name}}</p>
+                  <p><strong>Completion Date:</strong> {{completion_date}}</p>
+                </div>
+                
+                <a href="{{portal_url}}/feedback/{{application_id}}" class="button">Provide Feedback</a>
+                
+                <p>Your feedback is valuable for the student's development and helps us improve our internship program.</p>
+                
+                <p>Thank you,<br>Placement Cell<br>Technical University</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+        text: 'Request: Please provide feedback for {{student_name}} who completed the {{internship_title}} internship at {{company_name}} on {{completion_date}}.'
+      },
+
+      cross_department_opportunities: {
+        subject: 'Exciting Internship Opportunities in Other Departments',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #6f42c1 0%, #17a2b8 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+              .opportunities-list { background: #e7f3ff; padding: 20px; border-radius: 5px; margin: 20px 0; }
+              .button { background: #6f42c1; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 15px 0; }
+              .opportunity-item { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #ddd; }
+              .opportunity-item:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>🌐 Cross-Department Opportunities</h1>
+                <p>Expand your horizons</p>
+              </div>
+              <div class="content">
+                <p>Dear {{student_name}},</p>
+                
+                <p>We've found some exciting internship opportunities in other departments that might interest you.</p>
+                
+                <div class="opportunities-list">
+                  <h3>Recommended Opportunities:</h3>
+                  {{#each internships}}
+                  <div class="opportunity-item">
+                    <h4>{{this.title}}</h4>
+                    <p><strong>Company:</strong> {{this.company_name}}</p>
+                    <p><strong>Department:</strong> {{this.company_department}}</p>
+                    <p>{{this.description}}</p>
+                  </div>
+                  {{/each}}
+                </div>
+                
+                <a href="{{portal_url}}/internships?cross_department=true" class="button">View All Opportunities</a>
+                
+                <p>These opportunities are outside your current department but may align with your interests and skills.</p>
+                
+                <p>Best regards,<br>Placement Cell<br>Technical University</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+        text: 'Check out these exciting internship opportunities in other departments.'
+      },
+
+      new_message: {
+        subject: 'New Message in Application Chat - {{internship_title}}',
+        html: `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #007bff 0%, #17a2b8 100%); color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 8px 8px; }
+              .message-preview { background: #e7f3ff; padding: 20px; border-radius: 5px; margin: 20px 0; }
+              .button { background: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 15px 0; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>💬 New Message in Chat</h1>
+                <p>Regarding your application</p>
+              </div>
+              <div class="content">
+                <p>Dear {{student_name}},</p>
+                
+                <p>You have received a new message regarding your application for <strong>{{internship_title}}</strong>.</p>
+                
+                <div class="message-preview">
+                  <h3>Message Preview:</h3>
+                  <p>{{message_preview}}</p>
+                </div>
+                
+                <a href="{{portal_url}}/applications/{{application_id}}" class="button">View Conversation</a>
+                
+                <p>Please log in to the portal to view the full conversation and respond to the message.</p>
+                
+                <p>Best regards,<br>Placement Cell<br>Technical University</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `,
+        text: 'You have received a new message regarding your application for {{internship_title}}: {{message_preview}}'
       }
     };
   }

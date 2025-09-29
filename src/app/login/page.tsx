@@ -41,93 +41,144 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4">
       <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+        <div className="text-center animate-fade-in">
+          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
+            <span className="text-2xl">🔒</span>
+          </div>
+          <h2 className="mt-2 text-center text-3xl font-extrabold text-gray-900">
             Sign in to your account
           </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Or{' '}
-            <Link href="/register" className="font-medium text-blue-600 hover:text-blue-500">
-              create a new account
-            </Link>
+          <p className="mt-3 text-center text-sm text-gray-600 max-w-md mx-auto">
+            Access the Technical University Internship & Placement Portal to manage your career opportunities
           </p>
+          <div className="mt-4 flex items-center justify-center text-sm text-gray-500">
+            <span>New user?</span>
+            <Link href="/register" className="ml-2 font-medium text-blue-600 hover:text-blue-800 transition-colors duration-300">
+              Create a new account
+            </Link>
+          </div>
         </div>
         
         {/* Demo Accounts Section */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-sm font-medium text-blue-900">Demo Accounts for Testing</h3>
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 mb-8 shadow-lg transform transition-all duration-500 hover:shadow-xl">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center">
+              <div className="bg-blue-100 p-2 rounded-lg mr-3">
+                <span className="text-2xl">🔑</span>
+              </div>
+              <h3 className="text-lg font-bold text-blue-900">Demo Accounts for Testing</h3>
+            </div>
             <button
               type="button"
               onClick={() => setShowDemoAccounts(!showDemoAccounts)}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 transform hover:scale-105"
             >
               {showDemoAccounts ? 'Hide' : 'Show'} Demo Accounts
             </button>
           </div>
           
           {showDemoAccounts && (
-            <div className="space-y-3">
-              <p className="text-xs text-blue-700 mb-3">
-                Click any button below to auto-fill login credentials:
+            <div className="space-y-4 animate-fade-in">
+              <p className="text-sm text-blue-700 mb-4 bg-blue-100 p-3 rounded-lg">
+                <span className="font-bold">💡 Quick Access:</span> Click any button below to auto-fill login credentials
               </p>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <button
                   type="button"
                   onClick={() => fillDemoCredentials('amit.sharma', 'Password123!')}
-                  className="bg-white border border-blue-300 rounded px-3 py-2 text-sm hover:bg-blue-50 text-left"
+                  className="bg-white border-2 border-blue-300 rounded-xl px-4 py-3 text-sm hover:bg-blue-50 text-left transform transition-all duration-300 hover:scale-105 hover:shadow-md"
                 >
-                  <div className="font-medium text-blue-900">Student Account</div>
-                  <div className="text-xs text-blue-600">amit.sharma / Password123!</div>
+                  <div className="font-bold text-blue-900 flex items-center">
+                    <span className="mr-2">🎓</span>
+                    Student Account
+                  </div>
+                  <div className="text-xs text-blue-600 mt-1">Username: amit.sharma</div>
+                  <div className="text-xs text-blue-600">Password: Password123!</div>
                 </button>
                 
                 <button
                   type="button"
                   onClick={() => fillDemoCredentials('rajesh.staff', 'Password123!')}
-                  className="bg-white border border-blue-300 rounded px-3 py-2 text-sm hover:bg-blue-50 text-left"
+                  className="bg-white border-2 border-green-300 rounded-xl px-4 py-3 text-sm hover:bg-green-50 text-left transform transition-all duration-300 hover:scale-105 hover:shadow-md"
                 >
-                  <div className="font-medium text-blue-900">Staff Account</div>
-                  <div className="text-xs text-blue-600">rajesh.staff / Password123!</div>
+                  <div className="font-bold text-green-900 flex items-center">
+                    <span className="mr-2">👨‍🏫</span>
+                    Staff Account
+                  </div>
+                  <div className="text-xs text-green-600 mt-1">Username: rajesh.staff</div>
+                  <div className="text-xs text-green-600">Password: Password123!</div>
                 </button>
                 
                 <button
                   type="button"
                   onClick={() => fillDemoCredentials('vikram.mentor', 'Password123!')}
-                  className="bg-white border border-blue-300 rounded px-3 py-2 text-sm hover:bg-blue-50 text-left"
+                  className="bg-white border-2 border-purple-300 rounded-xl px-4 py-3 text-sm hover:bg-purple-50 text-left transform transition-all duration-300 hover:scale-105 hover:shadow-md"
                 >
-                  <div className="font-medium text-blue-900">Mentor Account</div>
-                  <div className="text-xs text-blue-600">vikram.mentor / Password123!</div>
+                  <div className="font-bold text-purple-900 flex items-center">
+                    <span className="mr-2">🧠</span>
+                    Mentor Account
+                  </div>
+                  <div className="text-xs text-purple-600 mt-1">Username: vikram.mentor</div>
+                  <div className="text-xs text-purple-600">Password: Password123!</div>
                 </button>
                 
                 <button
                   type="button"
                   onClick={() => fillDemoCredentials('suresh.employer', 'Password123!')}
-                  className="bg-white border border-blue-300 rounded px-3 py-2 text-sm hover:bg-blue-50 text-left"
+                  className="bg-white border-2 border-orange-300 rounded-xl px-4 py-3 text-sm hover:bg-orange-50 text-left transform transition-all duration-300 hover:scale-105 hover:shadow-md"
                 >
-                  <div className="font-medium text-blue-900">Employer Account</div>
-                  <div className="text-xs text-blue-600">suresh.employer / Password123!</div>
+                  <div className="font-bold text-orange-900 flex items-center">
+                    <span className="mr-2">🏢</span>
+                    Employer Account
+                  </div>
+                  <div className="text-xs text-orange-600 mt-1">Username: suresh.employer</div>
+                  <div className="text-xs text-orange-600">Password: Password123!</div>
                 </button>
               </div>
               
-              <div className="mt-3 p-2 bg-blue-100 rounded text-xs text-blue-800">
-                <strong>All Demo Accounts:</strong>
-                <ul className="mt-1 space-y-1">
-                  <li>• <strong>Students:</strong> amit.sharma, priya.singh, rajesh.kumar, neha.gupta, vivek.agarwal, pooja.jain, etc.</li>
-                  <li>• <strong>Staff:</strong> rajesh.staff, sunita.staff, vinod.staff</li>
-                  <li>• <strong>Mentors:</strong> vikram.mentor, meera.mentor, ashok.mentor, kavita.mentor, ramesh.mentor</li>
-                  <li>• <strong>Employers:</strong> suresh.employer, anita.employer, deepak.employer, ravi.employer, sneha.employer</li>
-                  <li>• <strong>Password for all accounts:</strong> Password123!</li>
-                </ul>
+              <div className="mt-4 p-4 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-xl text-sm text-blue-800 border border-blue-200">
+                <div className="font-bold mb-2 flex items-center">
+                  <span className="mr-2">📋</span>
+                  All Demo Accounts Information:
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <div className="font-medium mb-1">Students:</div>
+                    <div className="text-xs">amit.sharma, priya.singh, rajesh.kumar, neha.gupta, vivek.agarwal, pooja.jain, etc.</div>
+                  </div>
+                  <div>
+                    <div className="font-medium mb-1">Staff:</div>
+                    <div className="text-xs">rajesh.staff, sunita.staff, vinod.staff</div>
+                  </div>
+                  <div>
+                    <div className="font-medium mb-1">Mentors:</div>
+                    <div className="text-xs">vikram.mentor, meera.mentor, ashok.mentor, kavita.mentor, ramesh.mentor</div>
+                  </div>
+                  <div>
+                    <div className="font-medium mb-1">Employers:</div>
+                    <div className="text-xs">suresh.employer, anita.employer, deepak.employer, ravi.employer, sneha.employer</div>
+                  </div>
+                </div>
+                <div className="mt-3 pt-3 border-t border-blue-200 font-bold">
+                  Password for all accounts: <span className="bg-yellow-100 px-2 py-1 rounded">Password123!</span>
+                </div>
               </div>
+            </div>
+          )}
+          
+          {!showDemoAccounts && (
+            <div className="text-center py-3 bg-blue-100 rounded-lg text-blue-700 text-sm animate-pulse">
+              Click "Show Demo Accounts" to access test credentials
             </div>
           )}
         </div>
         
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+        <form className="mt-8 space-y-6 bg-white p-8 rounded-2xl shadow-xl border border-gray-100 transform transition-all duration-500 hover:shadow-2xl" onSubmit={handleSubmit}>
           {error && (
-            <div className="bg-red-50 border border-red-300 text-red-700 px-4 py-3 rounded">
-              {error}
+            <div className="bg-red-50 border-2 border-red-300 text-red-700 px-4 py-3 rounded-lg animate-shake flex items-center">
+              <span className="text-xl mr-2">⚠️</span>
+              <span>{error}</span>
             </div>
           )}
           
@@ -199,8 +250,17 @@ export default function LoginPage() {
           </button>
         </form>
         
-        <div className="mt-4 text-center text-xs text-gray-500">
-          <p>Student credentials (amit.sharma / Password123!) pre-filled for convenience</p>
+        <div className="mt-6 text-center bg-yellow-50 border border-yellow-200 rounded-lg p-4 animate-pulse-slow">
+          <div className="flex items-center justify-center mb-2">
+            <span className="text-xl mr-2">⚡</span>
+            <h4 className="font-bold text-yellow-800">Quick Access Enabled</h4>
+          </div>
+          <p className="text-sm text-yellow-700">
+            Student credentials pre-filled: <span className="font-mono font-bold">amit.sharma</span> / <span className="font-mono font-bold">Password123!</span>
+          </p>
+          <p className="text-xs text-yellow-600 mt-1">
+            Use the Demo Accounts section above for other roles
+          </p>
         </div>
 
         {/* Forgot Password Modal */}

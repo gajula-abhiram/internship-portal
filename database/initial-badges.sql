@@ -40,3 +40,10 @@ INSERT OR IGNORE INTO badges (name, description, icon, criteria, points, badge_t
 ('Problem Solver', 'Solved critical problems during internship', '🧩', '{"problem_solving": true}', 55, 'RECOGNITION'),
 ('Client Favorite', 'Highly rated by external clients', '🤩', '{"client_rating": 5}', 70, 'RECOGNITION'),
 ('Fast Learner', 'Quickly adapted to new technologies', '🚄', '{"learning_speed": "fast"}', 40, 'RECOGNITION');
+
+-- Employer Achievement badges
+INSERT OR IGNORE INTO badges (name, description, icon, criteria, points, badge_type) VALUES 
+('First Offer', 'Made your first internship offer', '🎯', '{"offers_made": 1}', 20, 'ACHIEVEMENT'),
+('Quick Application Responder', 'Reviewed applications within 24 hours', '⚡', '{"quick_response": true}', 25, 'ACHIEVEMENT'),
+('Positive Feedback Champion', 'Received excellent feedback (4.5+ rating) from students', '⭐', '{"feedback_rating": 4.5}', 50, 'ACHIEVEMENT'),
+('Internship Completion Master', 'Successfully completed 10 internships with students', '🏆', '{"internships_completed": 10}', 100, 'MILESTONE');

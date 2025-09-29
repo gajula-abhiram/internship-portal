@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { getDbQueries } from '@/lib/database';
+import { getDbQueries, getDatabase } from '@/lib/database';
 import { withAuth, ApiResponse, AuthenticatedRequest } from '@/lib/middleware';
 
 /**
@@ -9,8 +9,9 @@ import { withAuth, ApiResponse, AuthenticatedRequest } from '@/lib/middleware';
 export const GET = withAuth(async (req: AuthenticatedRequest) => {
   try {
     const queries = getDbQueries();
+    const db = getDatabase();
     
-    if (!queries) {
+    if (!queries || !db) {
       return ApiResponse.serverError('Database connection failed');
     }
 
@@ -23,33 +24,75 @@ export const GET = withAuth(async (req: AuthenticatedRequest) => {
     // Get open positions count
     const openPositions = queries.getOpenPositionsCount.get() as { count: number } | undefined;
 
-    // Mock recent applications and feedback data for now
-    const recentApplications = [
-      { id: 1, internship_title: 'Software Developer', student_name: 'John Doe', student_department: 'Computer Science', status: 'APPLIED', created_at: new Date().toISOString() },
-      { id: 2, internship_title: 'Frontend Developer', student_name: 'Jane Smith', student_department: 'IT', status: 'MENTOR_APPROVED', created_at: new Date().toISOString() }
-    ];
+    // Get average feedback rating
+    const avgRatingResult = queries.getAverageFeedbackRating.get() as { average_rating: number; total_feedback: number } | undefined;
 
-    // Mock data for missing queries until we implement them
-    const topInternships = [
-      { id: 1, title: 'Software Developer Intern', application_count: 15, posted_by_name: 'Tech Corp' },
-      { id: 2, title: 'Frontend Developer', application_count: 12, posted_by_name: 'Web Solutions' }
-    ];
+    // Get recent applications
+    const recentApplications = queries.getRecentApplications.all(5) as any[];
 
-    // Mock average rating
-    const avgRating = 4.2;
-    const totalFeedback = 15;
+    // Get top internships
+    const topInternships = queries.getTopInternships.all(5) as any[];
+
+    // Get department-wise placement statistics
+    const departmentStatsQuery = db.prepare(`
+      SELECT 
+        u.department,
+        COUNT(DISTINCT u.id) as total_students,
+        COUNT(DISTINCT CASE WHEN a.status IN ('OFFERED', 'COMPLETED') THEN u.id END) as placed_students,
+        COUNT(DISTINCT CASE WHEN a.status IN ('INTERVIEWED', 'INTERVIEW_SCHEDULED') THEN u.id END) as interviewing_students,
+        COUNT(DISTINCT CASE WHEN a.id IS NULL OR a.status NOT IN ('OFFERED', 'COMPLETED', 'INTERVIEWED', 'INTERVIEW_SCHEDULED') THEN u.id END) as unplaced_students
+      FROM users u
+      LEFT JOIN applications a ON u.id = a.student_id
+      WHERE u.role = 'STUDENT' AND u.department IS NOT NULL
+      GROUP BY u.department
+      ORDER BY placed_students DESC
+    `);
+
+    const departmentStats = departmentStatsQuery.all() as Array<{
+      department: string;
+      total_students: number;
+      placed_students: number;
+      interviewing_students: number;
+      unplaced_students: number;
+    }>;
+
+    // Calculate placement percentages
+    const departmentStatsWithPercentages = departmentStats.map(dept => ({
+      ...dept,
+      placement_percentage: dept.total_students > 0 ? Math.round((dept.placed_students / dept.total_students) * 10000) / 100 : 0,
+      interviewing_percentage: dept.total_students > 0 ? Math.round((dept.interviewing_students / dept.total_students) * 10000) / 100 : 0,
+      unplaced_percentage: dept.total_students > 0 ? Math.round((dept.unplaced_students / dept.total_students) * 10000) / 100 : 0
+    }));
+
+    // Get application trends (last 30 days)
+    const applicationTrendsQuery = db.prepare(`
+      SELECT 
+        DATE(applied_at) as date,
+        COUNT(*) as application_count
+      FROM applications
+      WHERE applied_at >= DATE('now', '-30 days')
+      GROUP BY DATE(applied_at)
+      ORDER BY date
+    `);
+
+    const applicationTrends = applicationTrendsQuery.all() as Array<{
+      date: string;
+      application_count: number;
+    }>;
 
     const analytics = {
       summary: {
         unplaced_students: unplacedStudents?.count || 0,
         open_positions: openPositions?.count || 0,
         total_applications: statusBreakdown.reduce((sum: number, item: any) => sum + item.count, 0),
-        average_rating: Math.round(avgRating * 100) / 100,
-        total_feedback: totalFeedback
+        average_rating: avgRatingResult?.average_rating ? Math.round(avgRatingResult.average_rating * 100) / 100 : 0,
+        total_feedback: avgRatingResult?.total_feedback || 0
       },
       status_breakdown: statusBreakdown,
       recent_applications: recentApplications,
-      top_internships: topInternships
+      top_internships: topInternships,
+      department_stats: departmentStatsWithPercentages,
+      application_trends: applicationTrends
     };
 
     return ApiResponse.success(analytics);

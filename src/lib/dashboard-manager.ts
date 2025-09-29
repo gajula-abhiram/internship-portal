@@ -39,12 +39,14 @@ export interface MentorDashboard {
 export interface StaffDashboard {
   total_students: number;
   placement_rate: number;
-  active_internships: number;
+  active_employers: number;
   pending_verifications: number;
   department_performance: any[];
   trending_companies: any[];
   monthly_placements: any[];
   system_health: any;
+  // New field for top performers
+  top_performers: any[];
 }
 
 export interface EmployerDashboard {
@@ -56,6 +58,12 @@ export interface EmployerDashboard {
   application_funnel: any;
   candidate_pipeline: any[];
   performance_metrics: any;
+  // New employer analytics fields
+  avg_completion_rate: number;
+  feedback_trends: any[];
+  top_performing_internships: any[];
+  candidate_demographics: any;
+  hiring_efficiency: any;
 }
 
 export class DashboardManager {
@@ -281,11 +289,16 @@ export class DashboardManager {
       const overallStats = this.db.prepare(`
         SELECT 
           COUNT(CASE WHEN role = 'STUDENT' THEN 1 END) as total_students,
-          COUNT(CASE WHEN role = 'STUDENT' AND placement_status = 'PLACED' THEN 1 END) as placed_students,
-          COUNT(CASE WHEN is_active = 1 THEN 1 END) as active_internships
+          COUNT(CASE WHEN role = 'STUDENT' AND placement_status = 'PLACED' THEN 1 END) as placed_students
         FROM users u
-        LEFT JOIN internships i ON 1=1
-        WHERE u.role = 'STUDENT' OR i.id IS NOT NULL
+        WHERE u.role = 'STUDENT'
+      `).get();
+
+      // Count active employers (users with role EMPLOYER)
+      const activeEmployers = this.db.prepare(`
+        SELECT COUNT(*) as active_employers
+        FROM users
+        WHERE role = 'EMPLOYER' AND is_active = 1
       `).get();
 
       const placementRate = overallStats?.total_students > 0 
@@ -338,15 +351,36 @@ export class DashboardManager {
         ORDER BY month DESC
       `).all();
 
+      // Top performers based on certificates and ratings
+      const topPerformers = this.db.prepare(`
+        SELECT 
+          u.id,
+          u.name,
+          u.department,
+          COUNT(c.id) as certificates_count,
+          AVG(c.performance_rating) as avg_rating,
+          er.internships_completed,
+          er.placement_ready_score
+        FROM users u
+        LEFT JOIN certificates c ON u.id = c.student_id
+        LEFT JOIN employability_records er ON u.id = er.student_id
+        WHERE u.role = 'STUDENT'
+        GROUP BY u.id, u.name, u.department, er.internships_completed, er.placement_ready_score
+        HAVING certificates_count > 0 OR internships_completed > 0
+        ORDER BY avg_rating DESC, certificates_count DESC, placement_ready_score DESC
+        LIMIT 10
+      `).all();
+
       return {
         total_students: overallStats?.total_students || 0,
         placement_rate: placementRate,
-        active_internships: overallStats?.active_internships || 0,
+        active_employers: activeEmployers?.active_employers || 0,
         pending_verifications: pendingVerifications,
         department_performance: departmentPerformance,
         trending_companies: trendingCompanies,
         monthly_placements: monthlyPlacements,
-        system_health: await this.getSystemHealth()
+        system_health: await this.getSystemHealth(),
+        top_performers: topPerformers
       };
     } catch (error) {
       console.error('Error getting staff dashboard:', error);
@@ -415,6 +449,79 @@ export class DashboardManager {
         LIMIT 20
       `).all(userId);
 
+      // Average completion rate
+      const avgCompletionRate = this.db.prepare(`
+        SELECT AVG(completion_percentage) as avg_completion_rate
+        FROM (
+          SELECT 
+            (COUNT(CASE WHEN a.status = 'COMPLETED' THEN 1 END) * 100.0 / 
+             NULLIF(COUNT(*), 0)) as completion_percentage
+          FROM applications a
+          JOIN internships i ON a.internship_id = i.id
+          WHERE i.posted_by = ?
+          GROUP BY i.id
+        )
+      `).get(userId)?.avg_completion_rate || 0;
+
+      // Feedback trends
+      const feedbackTrends = this.db.prepare(`
+        SELECT 
+          strftime('%Y-%m', f.created_at) as month,
+          AVG(f.rating) as avg_rating,
+          COUNT(*) as feedback_count
+        FROM feedback f
+        JOIN applications a ON f.application_id = a.id
+        JOIN internships i ON a.internship_id = i.id
+        WHERE i.posted_by = ?
+        GROUP BY strftime('%Y-%m', f.created_at)
+        ORDER BY month DESC
+        LIMIT 12
+      `).all(userId);
+
+      // Top performing internships
+      const topPerformingInternships = this.db.prepare(`
+        SELECT 
+          i.title,
+          i.company_name,
+          COUNT(a.id) as application_count,
+          AVG(f.rating) as avg_feedback_rating,
+          COUNT(CASE WHEN a.status = 'COMPLETED' THEN 1 END) as completion_count
+        FROM internships i
+        LEFT JOIN applications a ON i.id = a.internship_id
+        LEFT JOIN feedback f ON a.id = f.application_id
+        WHERE i.posted_by = ?
+        GROUP BY i.id, i.title, i.company_name
+        ORDER BY avg_feedback_rating DESC NULLS LAST, application_count DESC
+        LIMIT 10
+      `).all(userId);
+
+      // Candidate demographics
+      const candidateDemographics = this.db.prepare(`
+        SELECT 
+          u.department,
+          COUNT(*) as candidate_count,
+          AVG(u.employability_score) as avg_employability_score
+        FROM applications a
+        JOIN users u ON a.student_id = u.id
+        JOIN internships i ON a.internship_id = i.id
+        WHERE i.posted_by = ?
+        GROUP BY u.department
+        ORDER BY candidate_count DESC
+      `).all(userId);
+
+      // Hiring efficiency metrics
+      const hiringEfficiency = this.db.prepare(`
+        SELECT 
+          AVG(julianday(a.offer_accepted_at) - julianday(a.applied_at)) as avg_days_to_hire,
+          COUNT(CASE WHEN a.status = 'OFFER_ACCEPTED' THEN 1 END) * 100.0 / 
+          NULLIF(COUNT(CASE WHEN a.status IN ('OFFERED', 'OFFER_ACCEPTED') THEN 1 END), 0) as offer_acceptance_rate,
+          COUNT(CASE WHEN a.status = 'COMPLETED' THEN 1 END) * 100.0 / 
+          NULLIF(COUNT(CASE WHEN a.status = 'OFFER_ACCEPTED' THEN 1 END), 0) as internship_completion_rate
+        FROM applications a
+        JOIN internships i ON a.internship_id = i.id
+        WHERE i.posted_by = ?
+      `).get(userId);
+
       return {
         posted_internships: stats?.posted_internships || 0,
         total_applications: stats?.total_applications || 0,
@@ -423,7 +530,13 @@ export class DashboardManager {
         avg_hiring_time: Math.round(stats?.avg_hiring_time_days || 0),
         application_funnel: applicationFunnel,
         candidate_pipeline: candidatePipeline,
-        performance_metrics: await this.getEmployerPerformanceMetrics(userId)
+        performance_metrics: await this.getEmployerPerformanceMetrics(userId),
+        // New employer analytics fields
+        avg_completion_rate: Math.round(avgCompletionRate || 0),
+        feedback_trends: feedbackTrends,
+        top_performing_internships: topPerformingInternships,
+        candidate_demographics: candidateDemographics,
+        hiring_efficiency: hiringEfficiency
       };
     } catch (error) {
       console.error('Error getting employer dashboard:', error);
@@ -543,11 +656,29 @@ export class DashboardManager {
   }
 
   private async getEmployerPerformanceMetrics(userId: number): Promise<any> {
+    // Get more detailed performance metrics
+    const metrics = this.db.prepare(`
+      SELECT 
+        AVG(julianday(a.offer_accepted_at) - julianday(a.applied_at)) as time_to_hire_days,
+        COUNT(CASE WHEN f.rating >= 4 THEN 1 END) * 100.0 / 
+        NULLIF(COUNT(f.id), 0) as high_rating_percentage,
+        COUNT(CASE WHEN a.status = 'OFFER_ACCEPTED' THEN 1 END) * 100.0 / 
+        NULLIF(COUNT(CASE WHEN a.status IN ('OFFERED', 'OFFER_ACCEPTED') THEN 1 END), 0) as offer_acceptance_rate,
+        COUNT(CASE WHEN a.status = 'COMPLETED' THEN 1 END) * 100.0 / 
+        NULLIF(COUNT(CASE WHEN a.status = 'OFFER_ACCEPTED' THEN 1 END), 0) as internship_completion_rate,
+        AVG(f.rating) as avg_feedback_rating
+      FROM applications a
+      JOIN internships i ON a.internship_id = i.id
+      LEFT JOIN feedback f ON a.id = f.application_id
+      WHERE i.posted_by = ?
+    `).get(userId);
+
     return {
-      time_to_hire: 14, // days
-      candidate_satisfaction: 4.2, // out of 5
-      retention_rate: 85, // percentage
-      response_rate: 92 // percentage
+      time_to_hire: Math.round(metrics?.time_to_hire_days || 0),
+      candidate_satisfaction: Math.round((metrics?.avg_feedback_rating || 0) * 10) / 10,
+      retention_rate: Math.round(metrics?.internship_completion_rate || 0),
+      response_rate: Math.round(metrics?.offer_acceptance_rate || 0),
+      high_rating_percentage: Math.round(metrics?.high_rating_percentage || 0)
     };
   }
 

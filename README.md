@@ -127,7 +127,7 @@ This application is fully configured for automated deployment via GitHub + Verce
 - **Setup Guide**: [`VERCEL-GITHUB-SETUP.md`](./VERCEL-GITHUB-SETUP.md)
 - **Deployment Checklist**: [`DEPLOYMENT-CHECKLIST.md`](./DEPLOYMENT-CHECKLIST.md)
 - **Production Config**: [`.env.production`](./.env.production)
-- **Deployment Guide**: [`VERCEL-DEPLOYMENT-GUIDE.md`](./VERCEL-DEPLOYMENT-GUIDE.md)
+- **Deployment Guide**: [`DEPLOYMENT-GUIDE.md`](./DEPLOYMENT-GUIDE.md)
 
 #### Manual Deployment:
 For manual deployments:
@@ -135,6 +135,20 @@ For manual deployments:
 npm run deploy:vercel  # Deploy to production
 npm run deploy:preview # Deploy preview
 ```
+
+### 🛠️ GitHub Actions Deployment
+
+This repository includes a GitHub Actions workflow that automatically deploys to Vercel:
+
+- On push to `main` or `master` branch: Deploys to production
+- On pull requests to `main` or `master` branch: Creates preview deployments
+
+The workflow requires the following secrets to be set in your GitHub repository:
+- `VERCEL_ORG_ID` - Your Vercel organization ID
+- `VERCEL_PROJECT_ID` - Your Vercel project ID
+- `VERCEL_TOKEN` - Your Vercel authentication token
+
+See [DEPLOYMENT-GUIDE.md](./DEPLOYMENT-GUIDE.md) for detailed instructions.
 
 ---
 

@@ -9,7 +9,8 @@ export interface NotificationData {
   recipient_role: 'STUDENT' | 'STAFF' | 'MENTOR' | 'EMPLOYER';
   type: 'APPLICATION_SUBMITTED' | 'APPLICATION_APPROVED' | 'APPLICATION_REJECTED' | 
         'INTERVIEW_SCHEDULED' | 'OFFER_RECEIVED' | 'FEEDBACK_REQUEST' | 
-        'CERTIFICATE_GENERATED' | 'DEADLINE_REMINDER' | 'NEW_INTERNSHIP';
+        'CERTIFICATE_GENERATED' | 'DEADLINE_REMINDER' | 'NEW_INTERNSHIP' |
+        'DEADLINE' | 'INTERVIEW' | 'APPROVAL' | 'FEEDBACK' | 'CROSS_DEPARTMENT' | 'NEW_MESSAGE';
   title: string;
   message: string;
   data?: any;
@@ -189,6 +190,39 @@ export class NotificationService {
   }
   
   /**
+   * Notify students about internships in other departments
+   */
+  static async notifyCrossDepartmentOpportunities(studentId: number, internships: any[]): Promise<void> {
+    if (internships.length === 0) return;
+    
+    const internshipList = internships.map(i => `"${i.title}" at ${i.company_name}`).join(', ');
+    
+    await this.sendNotification({
+      recipient_id: studentId,
+      recipient_role: 'STUDENT',
+      type: 'CROSS_DEPARTMENT',
+      title: 'Opportunities in Other Departments',
+      message: `Check out these exciting internships from other departments: ${internshipList}`,
+      data: { internships },
+      action_url: '/internships?cross_department=true'
+    });
+  }
+  
+  /**
+   * Notify about new chat message
+   */
+  static async notifyNewMessage(recipientId: number, recipientRole: 'STUDENT' | 'MENTOR', internshipTitle: string, messagePreview: string): Promise<void> {
+    await this.sendNotification({
+      recipient_id: recipientId,
+      recipient_role: recipientRole,
+      type: 'NEW_MESSAGE',
+      title: 'New Message in Application Chat',
+      message: `You have a new message regarding your application for "${internshipTitle}": ${messagePreview.substring(0, 50)}${messagePreview.length > 50 ? '...' : ''}`,
+      action_url: '/applications'
+    });
+  }
+  
+  /**
    * Email notification templates
    */
   /**
@@ -199,8 +233,16 @@ export class NotificationService {
       const templateMap = {
         'APPLICATION_SUBMITTED': 'application_submitted',
         'APPLICATION_APPROVED': 'application_approved', 
+        'APPLICATION_REJECTED': 'application_rejected',
         'INTERVIEW_SCHEDULED': 'interview_scheduled',
-        'CERTIFICATE_GENERATED': 'certificate_ready'
+        'CERTIFICATE_GENERATED': 'certificate_ready',
+        'DEADLINE_REMINDER': 'deadline_reminder',
+        'DEADLINE': 'deadline_reminder',
+        'INTERVIEW': 'interview_reminder',
+        'APPROVAL': 'approval_reminder',
+        'FEEDBACK': 'feedback_reminder',
+        'CROSS_DEPARTMENT': 'cross_department_opportunities',
+        'NEW_MESSAGE': 'new_message'
       };
 
       const template = templateMap[notification.type as keyof typeof templateMap];
@@ -272,7 +314,14 @@ export class NotificationService {
       'APPLICATION_REJECTED', 
       'INTERVIEW_SCHEDULED',
       'OFFER_RECEIVED',
-      'CERTIFICATE_GENERATED'
+      'CERTIFICATE_GENERATED',
+      'DEADLINE_REMINDER',
+      'DEADLINE',
+      'INTERVIEW',
+      'APPROVAL',
+      'FEEDBACK',
+      'CROSS_DEPARTMENT',
+      'NEW_MESSAGE'
     ];
     
     return emailTypes.includes(type);
@@ -339,5 +388,35 @@ export const NotificationTemplates = {
   NEW_INTERNSHIP: (internshipTitle: string, company: string) => ({
     title: 'New Opportunity Available',
     message: `A new internship "${internshipTitle}" at ${company} is now available for your department.`
+  }),
+  
+  DEADLINE_REMINDER: (internshipTitle: string, deadline: string) => ({
+    title: 'Application Deadline Approaching',
+    message: `Reminder: The application deadline for "${internshipTitle}" is ${deadline}. Don't miss out!`
+  }),
+  
+  INTERVIEW_REMINDER: (internshipTitle: string, dateTime: string) => ({
+    title: 'Interview Reminder',
+    message: `Reminder: Your interview for "${internshipTitle}" is scheduled for ${dateTime}.`
+  }),
+  
+  APPROVAL_REMINDER: (internshipTitle: string, studentName: string) => ({
+    title: 'Pending Application Approval',
+    message: `You have a pending application from ${studentName} for "${internshipTitle}" that requires your review.`
+  }),
+  
+  FEEDBACK_REMINDER: (studentName: string, internshipTitle: string) => ({
+    title: 'Feedback Request',
+    message: `Please provide feedback for ${studentName} who completed the internship "${internshipTitle}".`
+  }),
+  
+  CROSS_DEPARTMENT_OPPORTUNITIES: (internshipCount: number) => ({
+    title: 'Opportunities in Other Departments',
+    message: `Check out these ${internshipCount} exciting internships from other departments.`
+  }),
+  
+  NEW_MESSAGE: (internshipTitle: string, messagePreview: string) => ({
+    title: 'New Message in Application Chat',
+    message: `You have a new message regarding your application for "${internshipTitle}": ${messagePreview.substring(0, 50)}${messagePreview.length > 50 ? '...' : ''}`
   })
 };

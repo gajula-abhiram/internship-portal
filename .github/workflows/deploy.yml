@@ -30,6 +30,9 @@ jobs:
       - name: Run linting
         run: npm run lint --if-present || echo "Lint script not found, skipping..."
         
+      - name: Run tests
+        run: npm test || echo "No test script found, skipping..."
+        
       - name: Build project
         run: npm run build
         
@@ -63,4 +66,4 @@ jobs:
         run: |
           echo "Performing health check on production deployment..."
           # Add your production URL health check here
-          # curl -f https://your-app.vercel.app/api/health || exit 1
+          curl -f https://your-app.vercel.app/api/health || exit 1

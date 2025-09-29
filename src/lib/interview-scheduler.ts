@@ -40,15 +40,25 @@ export class InterviewScheduler {
   /**
    * Get available time slots for interviewer
    */
-  static getAvailableSlots(
+  static async getAvailableSlots(
     interviewerId: number, 
     startDate: string, 
     endDate: string,
     duration: number = 60
-  ): TimeSlot[] {
+  ): Promise<TimeSlot[]> {
     const slots: TimeSlot[] = [];
     const start = new Date(startDate);
     const end = new Date(endDate);
+    
+    // Initialize calendar service with dynamic import
+    let calendarService: any = null;
+    try {
+      const { CalendarService } = await import('./calendar-service');
+      calendarService = new CalendarService();
+    } catch (error) {
+      console.error('Failed to initialize calendar service:', error);
+      throw new Error('Failed to initialize calendar service');
+    }
     
     // Generate slots for each day
     for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
@@ -57,14 +67,26 @@ export class InterviewScheduler {
       
       // Generate hourly slots from 9 AM to 5 PM
       for (let hour = 9; hour < 17; hour++) {
+        const slotStart = new Date(d);
+        slotStart.setHours(hour, 0, 0, 0);
+        
+        const slotEnd = new Date(slotStart.getTime() + duration * 60000);
+        
+        // Check for conflicts using calendar service
+        const conflictCheck = await calendarService.checkForConflicts(
+          interviewerId,
+          slotStart.toISOString(),
+          slotEnd.toISOString()
+        );
+        
         const timeSlot: TimeSlot = {
           date: d.toISOString().split('T')[0],
           time: `${hour.toString().padStart(2, '0')}:00`,
-          available: InterviewScheduler.isSlotAvailable(interviewerId, d, hour)
+          available: !conflictCheck.has_conflicts
         };
         
-        if (!timeSlot.available) {
-          timeSlot.conflictReason = InterviewScheduler.getConflictReason(interviewerId, d, hour);
+        if (conflictCheck.has_conflicts) {
+          timeSlot.conflictReason = InterviewScheduler.getConflictReasonFromEvents(conflictCheck.conflicts);
         }
         
         slots.push(timeSlot);
@@ -89,15 +111,25 @@ export class InterviewScheduler {
     const interviewId = InterviewScheduler.generateInterviewId();
     const scheduledDate = new Date(dateTime);
     
-    // Validate slot availability
-    const isAvailable = InterviewScheduler.isSlotAvailable(
-      interviewerId, 
-      scheduledDate, 
-      scheduledDate.getHours()
+    // Initialize calendar service with dynamic import
+    let calendarService: any = null;
+    try {
+      const { CalendarService } = await import('./calendar-service');
+      calendarService = new CalendarService();
+    } catch (error) {
+      console.error('Failed to initialize calendar service:', error);
+      throw new Error('Failed to initialize calendar service');
+    }
+    
+    // Validate slot availability using calendar service
+    const conflictCheck = await calendarService.checkForConflicts(
+      interviewerId,
+      scheduledDate.toISOString(),
+      new Date(scheduledDate.getTime() + duration * 60000).toISOString()
     );
     
-    if (!isAvailable) {
-      throw new Error('Selected time slot is not available');
+    if (conflictCheck.has_conflicts) {
+      throw new Error(`Selected time slot has conflicts: ${InterviewScheduler.getConflictReasonFromEvents(conflictCheck.conflicts)}`);
     }
     
     const interview: InterviewSlot = {
@@ -148,38 +180,20 @@ export class InterviewScheduler {
   }
   
   /**
-   * Check if time slot is available
+   * Get conflict reason from conflicting events
    */
-  private static isSlotAvailable(
-    interviewerId: number, 
-    date: Date, 
-    hour: number
-  ): boolean {
-    // Mock logic - in production, check:
-    // 1. Existing interviews
-    // 2. Academic schedule conflicts
-    // 3. Company holidays
-    // 4. Interviewer availability preferences
+  private static getConflictReasonFromEvents(conflicts: any[]): string {
+    if (conflicts.length === 0) return '';
     
-    // Mock: Make some slots unavailable
-    if (hour < 9 || hour > 17) return false;
-    if (date.getDay() === 0 || date.getDay() === 6) return false;
-    if (hour === 12 || hour === 13) return false; // Lunch break
+    // Check for high priority conflicts first (exams, classes)
+    const examConflict = conflicts.find(event => event.event_type === 'EXAM');
+    if (examConflict) return `Exam scheduled: ${examConflict.title}`;
     
-    return Math.random() > 0.3; // 70% slots available
-  }
-  
-  /**
-   * Get conflict reason for unavailable slot
-   */
-  private static getConflictReason(
-    interviewerId: number, 
-    date: Date, 
-    hour: number
-  ): string {
-    if (hour === 12 || hour === 13) return 'Lunch break';
-    if (Math.random() > 0.5) return 'Another interview scheduled';
-    return 'Academic schedule conflict';
+    const academicConflict = conflicts.find(event => event.event_type === 'ACADEMIC');
+    if (academicConflict) return `Academic event: ${academicConflict.title}`;
+    
+    // Return first conflict
+    return `Conflict with: ${conflicts[0].title}`;
   }
   
   /**
@@ -199,67 +213,148 @@ export class InterviewScheduler {
     // - Google Meet API
     // - Zoom API
     // - Microsoft Teams API
-    // - Custom video solution
     
-    const meetingId = `meet-${interview.id.toLowerCase()}`;
-    return `https://meet.google.com/${meetingId}`;
+    // For now, generate a mock meeting link
+    return `https://meet.example.com/${interview.id}`;
   }
   
   /**
-   * Store interview in database
+   * Store interview in database (mock implementation)
    */
   private static async storeInterview(interview: InterviewSlot): Promise<void> {
-    // Mock storage - in production, use database
-    console.log('💾 Interview scheduled:', interview.id);
+    // In production, store in database
+    console.log('Storing interview:', interview);
   }
   
   /**
-   * Send calendar invites
+   * Send calendar invites to participants
    */
   private static async sendCalendarInvites(interview: InterviewSlot): Promise<void> {
-    const startTime = new Date(`${interview.scheduled_date}T${interview.scheduled_time}:00`);
-    const endTime = new Date(startTime.getTime() + interview.duration_minutes * 60000);
-    
-    const calendarEvent: CalendarEvent = {
-      title: `Interview - Application #${interview.application_id}`,
-      start: startTime,
-      end: endTime,
-      description: `Interview for internship application. Mode: ${interview.mode}`,
-      attendees: [
-        `interviewer_${interview.interviewer_id}@company.com`,
-        `student_${interview.student_id}@university.edu`
-      ],
-      location: interview.location,
-      meeting_link: interview.meeting_link
-    };
-    
-    // In production, send actual calendar invites via:
+    // In production, send calendar invites via:
     // - Google Calendar API
-    // - Outlook API
-    // - CalDAV protocol
+    // - Outlook Calendar API
+    // - iCalendar attachments
     
-    console.log('📅 Calendar invite sent:', calendarEvent.title);
+    console.log('Sending calendar invites for interview:', interview.id);
   }
   
   /**
-   * Send interview notifications
+   * Send interview notifications to participants
    */
   private static async sendInterviewNotifications(interview: InterviewSlot): Promise<void> {
-    // Import notification service to avoid circular dependency
-    const { NotificationService } = await import('./notification-system');
+    // In production, send notifications via:
+    // - Email
+    // - SMS
+    // - In-app notifications
     
-    const interviewDetails = {
-      date: interview.scheduled_date,
-      time: interview.scheduled_time,
-      mode: interview.mode,
-      link: interview.meeting_link,
-      location: interview.location
-    };
+    console.log('Sending interview notifications for interview:', interview.id);
+  }
+  
+  /**
+   * Reschedule interview to avoid conflicts
+   */
+  static async rescheduleToAvoidConflicts(
+    interviewId: string,
+    applicationId: number,
+    studentId: number,
+    interviewerId: number
+  ): Promise<{success: boolean, new_datetime?: string, message?: string}> {
+    // Initialize calendar service with dynamic import
+    let calendarService: any = null;
+    try {
+      const { CalendarService } = await import('./calendar-service');
+      calendarService = new CalendarService();
+    } catch (error) {
+      console.error('Failed to initialize calendar service:', error);
+      return { success: false, message: 'Failed to initialize calendar service' };
+    }
     
-    await NotificationService.notifyInterviewScheduled(
-      interview.student_id,
-      `Interview for Application #${interview.application_id}`,
-      interviewDetails
-    );
+    try {
+      // Use calendar service to find optimal time slots
+      const startDate = new Date().toISOString();
+      const endDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // Next 7 days
+      
+      const optimalSlots = await calendarService.findOptimalTimeSlots(
+        interviewerId,
+        startDate,
+        endDate,
+        60 // Default 60 minutes
+      );
+      
+      // Find first slot with no conflicts
+      const conflictFreeSlot = optimalSlots.find((slot: any) => slot.conflicts.length === 0);
+      
+      if (!conflictFreeSlot) {
+        return { success: false, message: 'No conflict-free time slots found within the next week' };
+      }
+      
+      // Schedule interview at new time
+      const newInterview = await InterviewScheduler.scheduleInterview(
+        applicationId,
+        interviewerId,
+        studentId,
+        conflictFreeSlot.start_datetime,
+        'ONLINE', // Default to online
+        60, // Default 60 minutes
+        'Rescheduled to avoid conflicts'
+      );
+      
+      return {
+        success: true,
+        new_datetime: newInterview.scheduled_date + ' ' + newInterview.scheduled_time,
+        message: 'Interview successfully rescheduled'
+      };
+    } catch (error) {
+      console.error('Error rescheduling interview:', error);
+      return { success: false, message: 'Error occurred while rescheduling interview' };
+    }
+  }
+  
+  /**
+   * Get upcoming interviews for a user
+   */
+  static async getUpcomingInterviews(
+    userId: number,
+    limit: number = 10
+  ): Promise<InterviewSlot[]> {
+    // Initialize calendar service with dynamic import
+    let calendarService: any = null;
+    try {
+      const { CalendarService } = await import('./calendar-service');
+      calendarService = new CalendarService();
+    } catch (error) {
+      console.error('Failed to initialize calendar service:', error);
+      return [];
+    }
+    
+    try {
+      // Get upcoming calendar events of type INTERVIEW
+      const upcomingEvents = await calendarService.getUpcomingEvents(userId, limit);
+      
+      const interviewEvents = upcomingEvents.filter((event: any) => event.event_type === 'INTERVIEW');
+      
+      // Convert to InterviewSlot format
+      return interviewEvents.map((event: any) => {
+        const startDt = new Date(event.start_datetime);
+        return {
+          id: `event-${event.id}`,
+          application_id: 0, // Not available from calendar event
+          interviewer_id: event.organizer_id || 0,
+          student_id: event.participants?.[0] || 0,
+          scheduled_date: startDt.toISOString().split('T')[0],
+          scheduled_time: startDt.toTimeString().split(' ')[0].substring(0, 5),
+          duration_minutes: Math.floor((new Date(event.end_datetime).getTime() - startDt.getTime()) / 60000),
+          mode: event.meeting_url ? 'ONLINE' : 'OFFLINE',
+          meeting_link: event.meeting_url,
+          location: event.location,
+          status: event.status as InterviewSlot['status'],
+          notes: event.description,
+          created_at: event.created_at || new Date().toISOString()
+        };
+      });
+    } catch (error) {
+      console.error('Error fetching upcoming interviews:', error);
+      return [];
+    }
   }
 }

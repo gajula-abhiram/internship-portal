@@ -20,8 +20,19 @@ export class AutomatedMentorWorkflow {
   private badgeManager: BadgeManager;
 
   constructor() {
-    this.db = getDatabase();
+    // Initialize database with dynamic import
+    this.initializeDatabase();
     this.badgeManager = new BadgeManager();
+  }
+
+  private async initializeDatabase() {
+    try {
+      const { getDatabase } = await import('./database');
+      this.db = getDatabase();
+    } catch (error) {
+      console.error('Failed to initialize database:', error);
+      this.db = null;
+    }
   }
 
   /**

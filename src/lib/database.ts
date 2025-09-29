@@ -1,9 +1,5 @@
-import Database from 'better-sqlite3';
-import { join } from 'path';
-import { getMemoryDatabase } from './memory-database';
-
 // Database instance
-let db: Database.Database;
+let db: any = null;
 
 // Check if we're in Vercel production environment
 const isVercelProduction = process.env.VERCEL === '1';
@@ -16,34 +12,55 @@ export function getDatabase() {
     return null; // Memory database will be handled in getDbQueries
   }
   
+  // Dynamically import better-sqlite3 and path only when needed
   if (!db) {
-    let dbPath: string;
-    
-    if (process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('sqlite:')) {
-      dbPath = process.env.DATABASE_URL.replace('sqlite:', '');
-    } else {
-      dbPath = isProduction 
-        ? '/tmp/internship.db' 
-        : join(process.cwd(), 'internship.db');
-    }
-    
     try {
-      db = new Database(dbPath);
-      db.pragma('journal_mode = WAL');
-      db.pragma('synchronous = NORMAL');
-      db.pragma('cache_size = 1000000');
-      db.pragma('foreign_keys = ON');
-      initializeDatabase();
+      // Use dynamic import to avoid issues with Next.js build process
+      Promise.all([
+        import('better-sqlite3'),
+        import('path')
+      ]).then(([DatabaseModule, PathModule]) => {
+        const Database = DatabaseModule.default;
+        const { join } = PathModule;
+        
+        let dbPath: string;
+        
+        if (process.env.DATABASE_URL && process.env.DATABASE_URL.startsWith('sqlite:')) {
+          dbPath = process.env.DATABASE_URL.replace('sqlite:', '');
+        } else {
+          dbPath = isProduction 
+            ? '/tmp/internship.db' 
+            : join(process.cwd(), 'internship.db');
+        }
+        
+        try {
+          db = new Database(dbPath);
+          db.pragma('journal_mode = WAL');
+          db.pragma('synchronous = NORMAL');
+          db.pragma('cache_size = 1000000');
+          db.pragma('foreign_keys = ON');
+          initializeDatabase();
+        } catch (error) {
+          console.error('Failed to initialize SQLite database:', error);
+          console.error('Database path:', dbPath);
+          db = null;
+        }
+      }).catch((error) => {
+        console.error('Failed to import database modules:', error);
+        db = null;
+      });
     } catch (error) {
-      console.error('Failed to initialize SQLite database:', error);
-      console.error('Database path:', dbPath);
-      return null;
+      console.error('Error during dynamic import setup:', error);
+      db = null;
     }
   }
   return db;
 }
 
 function initializeDatabase() {
+  // Only initialize if we have a database instance
+  if (!db) return;
+  
   // Create users table
   db.exec(`
     CREATE TABLE IF NOT EXISTS users (
@@ -113,6 +130,39 @@ function initializeDatabase() {
     )
   `);
 
+  // Create feedback table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS feedback (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      application_id INTEGER NOT NULL,
+      supervisor_id INTEGER NOT NULL,
+      rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+      comments TEXT,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (application_id) REFERENCES applications(id),
+      FOREIGN KEY (supervisor_id) REFERENCES users(id)
+    )
+  `);
+
+  // Create calendar_events table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS calendar_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      description TEXT,
+      event_type TEXT CHECK (event_type IN ('INTERVIEW', 'EXAM', 'ACADEMIC', 'DEADLINE', 'PLACEMENT', 'OTHER')),
+      start_datetime DATETIME NOT NULL,
+      end_datetime DATETIME NOT NULL,
+      organizer_id INTEGER,
+      participants TEXT, -- JSON array of user IDs
+      location TEXT,
+      meeting_url TEXT,
+      status TEXT DEFAULT 'SCHEDULED' CHECK (status IN ('SCHEDULED', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'RESCHEDULED')),
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (organizer_id) REFERENCES users(id)
+    )
+  `);
+
   // Create indexes for better performance
   db.exec(`
     CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
@@ -122,6 +172,7 @@ function initializeDatabase() {
     CREATE INDEX IF NOT EXISTS idx_applications_status ON applications(status);
     CREATE INDEX IF NOT EXISTS idx_internships_active ON internships(is_active);
     CREATE INDEX IF NOT EXISTS idx_feedback_application ON feedback(application_id);
+    CREATE INDEX IF NOT EXISTS idx_calendar_events_date ON calendar_events(start_datetime);
   `);
   
   // Seed database with default users if empty
@@ -130,6 +181,9 @@ function initializeDatabase() {
 
 // Seed database with default users if empty
 function seedDatabaseIfEmpty() {
+  // Only seed if we have a database instance
+  if (!db) return;
+  
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
   
   if (userCount.count === 0) {
@@ -184,12 +238,14 @@ export function getDbQueries() {
   // Use memory database for Vercel production or when configured
   if (isVercelProduction || process.env.ENABLE_MEMORY_DB === 'true' || process.env.DATABASE_URL === 'memory://') {
     console.log('Initializing memory database for serverless environment');
+    const { getMemoryDatabase } = require('./memory-database');
     return getMemoryDatabase();
   }
   
-  const db = getDatabase();
+  // Wait for database to be initialized
   if (!db) {
     console.error('Database not available, falling back to memory database');
+    const { getMemoryDatabase } = require('./memory-database');
     return getMemoryDatabase();
   }
   
@@ -309,6 +365,66 @@ export function getDbQueries() {
         ORDER BY f.created_at DESC
       `),
 
+      // Calendar event queries
+      createCalendarEvent: db.prepare(`
+        INSERT INTO calendar_events (
+          title, description, event_type, start_datetime, end_datetime,
+          organizer_id, participants, location, meeting_url, status
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `),
+      
+      getCalendarEventsByUser: db.prepare(`
+        SELECT * FROM calendar_events
+        WHERE (
+          organizer_id = ? 
+          OR participants LIKE ? 
+          OR participants LIKE ?
+        )
+        AND start_datetime >= ? 
+        AND end_datetime <= ?
+        ORDER BY start_datetime ASC
+      `),
+      
+      getCalendarEventsForDate: db.prepare(`
+        SELECT * FROM calendar_events
+        WHERE DATE(start_datetime) = DATE(?)
+        AND (
+          organizer_id = ? 
+          OR participants LIKE ? 
+          OR participants LIKE ?
+        )
+        ORDER BY start_datetime ASC
+      `),
+      
+      getCalendarEventById: db.prepare(`
+        SELECT * FROM calendar_events
+        WHERE id = ?
+      `),
+      
+      updateCalendarEvent: db.prepare(`
+        UPDATE calendar_events 
+        SET title = ?, description = ?, event_type = ?, start_datetime = ?, end_datetime = ?,
+            organizer_id = ?, participants = ?, location = ?, meeting_url = ?, status = ?
+        WHERE id = ?
+      `),
+      
+      deleteCalendarEvent: db.prepare(`
+        DELETE FROM calendar_events
+        WHERE id = ?
+      `),
+      
+      getUpcomingCalendarEvents: db.prepare(`
+        SELECT * FROM calendar_events
+        WHERE (
+          organizer_id = ? 
+          OR participants LIKE ? 
+          OR participants LIKE ?
+        )
+        AND start_datetime >= ?
+        ORDER BY start_datetime ASC
+        LIMIT ?
+      `),
+
       // Analytics queries
       getUnplacedStudentsCount: db.prepare(`
         SELECT COUNT(*) as count
@@ -360,6 +476,7 @@ export function getDbQueries() {
     };
   } catch (error) {
     console.error('Error initializing database queries:', error);
+    const { getMemoryDatabase } = require('./memory-database');
     return getMemoryDatabase();
   }
 }

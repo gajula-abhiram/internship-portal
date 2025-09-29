@@ -294,17 +294,17 @@ export default function ProfilePage() {
             {/* Resume Section */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Resume/Bio
+                Resume/CV Link
               </label>
-              <textarea
+              <input
+                type="url"
                 value={profile.resume}
                 onChange={(e) => setProfile(prev => ({ ...prev, resume: e.target.value }))}
-                rows={6}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter a brief description about yourself, your achievements, projects, and career goals..."
+                placeholder="https://your-resume-link.com"
               />
               <p className="text-sm text-gray-500 mt-1">
-                This will be visible to employers when you apply for internships.
+                Paste the link to your resume/CV here. This will be visible to employers when you apply for internships.
               </p>
             </div>
 

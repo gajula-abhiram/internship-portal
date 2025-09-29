@@ -1,9 +1,13 @@
 // Certificate Generation System
 // Implements "certificate generation and automatically updating the student's employability record"
 
+import { getDatabase } from './database';
+import { NotificationService } from './notification-system';
+
 export interface CertificateData {
   student_name: string;
   student_id: string;
+  student_username: string;
   internship_title: string;
   company_name: string;
   supervisor_name: string;
@@ -56,6 +60,19 @@ export class CertificateGenerator {
       // Store certificate record
       await this.storeCertificateRecord(data, certificateId);
       
+      // Update student's employability record
+      await this.updateEmployabilityRecord(parseInt(data.student_id), data);
+      
+      // Automatically upload certificate to student's profile
+      await this.uploadCertificateToProfile(parseInt(data.student_id), certificateUrl, certificateId);
+      
+      // Notify student about certificate availability
+      await NotificationService.notifyCertificateGenerated(
+        parseInt(data.student_id), 
+        data.internship_title, 
+        certificateUrl
+      );
+      
       return {
         certificate_url: certificateUrl,
         certificate_id: certificateId,
@@ -72,27 +89,98 @@ export class CertificateGenerator {
    * Update student's employability record
    */
   static async updateEmployabilityRecord(studentId: number, certificateData: CertificateData): Promise<EmployabilityRecord> {
-    // Get existing record or create new one
-    const existingRecord = await this.getEmployabilityRecord(studentId);
+    const db = getDatabase();
+    if (!db) {
+      throw new Error('Database connection failed');
+    }
     
-    const updatedRecord: EmployabilityRecord = {
-      student_id: studentId,
-      internships_completed: (existingRecord?.internships_completed || 0) + 1,
-      total_duration_weeks: (existingRecord?.total_duration_weeks || 0) + certificateData.duration_weeks,
-      average_rating: this.calculateAverageRating(existingRecord, certificateData.performance_rating),
-      skills_acquired: this.mergeSkills(existingRecord?.skills_acquired || [], certificateData.skills_demonstrated),
-      certifications: [...(existingRecord?.certifications || []), certificateData.certificate_id],
-      placement_ready_score: 0, // Will be calculated
-      last_updated: new Date().toISOString()
-    };
+    try {
+      // Get existing record or create new one
+      const existingRecord = await this.getEmployabilityRecord(studentId);
+      
+      const updatedRecord: EmployabilityRecord = {
+        student_id: studentId,
+        internships_completed: (existingRecord?.internships_completed || 0) + 1,
+        total_duration_weeks: (existingRecord?.total_duration_weeks || 0) + certificateData.duration_weeks,
+        average_rating: this.calculateAverageRating(existingRecord, certificateData.performance_rating),
+        skills_acquired: this.mergeSkills(existingRecord?.skills_acquired || [], certificateData.skills_demonstrated),
+        certifications: [...(existingRecord?.certifications || []), certificateData.certificate_id],
+        placement_ready_score: 0, // Will be calculated
+        last_updated: new Date().toISOString()
+      };
+      
+      // Calculate placement readiness score
+      updatedRecord.placement_ready_score = this.calculatePlacementReadinessScore(updatedRecord);
+      
+      // Store updated record
+      await this.storeEmployabilityRecord(updatedRecord);
+      
+      return updatedRecord;
+    } catch (error) {
+      console.error('Error updating employability record:', error);
+      throw new Error('Failed to update employability record');
+    }
+  }
+  
+  /**
+   * Automatically upload certificate to student's profile
+   */
+  static async uploadCertificateToProfile(studentId: number, certificateUrl: string, certificateId: string): Promise<void> {
+    const db = getDatabase();
+    if (!db) {
+      throw new Error('Database connection failed');
+    }
     
-    // Calculate placement readiness score
-    updatedRecord.placement_ready_score = this.calculatePlacementReadinessScore(updatedRecord);
+    try {
+      // Create certificates table if it doesn't exist
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS user_certificates (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          user_id INTEGER NOT NULL,
+          certificate_url TEXT NOT NULL,
+          certificate_id TEXT NOT NULL,
+          uploaded_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+      `);
+      
+      // Insert certificate into user's profile
+      const insert = db.prepare(`
+        INSERT INTO user_certificates (user_id, certificate_url, certificate_id)
+        VALUES (?, ?, ?)
+      `);
+      
+      insert.run(studentId, certificateUrl, certificateId);
+      
+      console.log(`💾 Certificate ${certificateId} uploaded to profile for user ${studentId}`);
+    } catch (error) {
+      console.error('Error uploading certificate to profile:', error);
+      throw error;
+    }
+  }
+  
+  /**
+   * Get user's certificates
+   */
+  static async getUserCertificates(userId: number): Promise<Array<{certificate_url: string, certificate_id: string, uploaded_at: string}>> {
+    const db = getDatabase();
+    if (!db) {
+      return [];
+    }
     
-    // Store updated record
-    await this.storeEmployabilityRecord(updatedRecord);
-    
-    return updatedRecord;
+    try {
+      const query = db.prepare(`
+        SELECT certificate_url, certificate_id, uploaded_at 
+        FROM user_certificates 
+        WHERE user_id = ? 
+        ORDER BY uploaded_at DESC
+      `);
+      
+      return query.all(userId) as any[];
+    } catch (error) {
+      console.error('Error getting user certificates:', error);
+      return [];
+    }
   }
   
   /**
@@ -197,6 +285,7 @@ export class CertificateGenerator {
           
           <div class="recipient">${data.student_name}</div>
           <div style="font-size: 16px; color: #6b7280;">Student ID: ${data.student_id}</div>
+          <div style="font-size: 16px; color: #6b7280;">Username: ${data.student_username}</div>
           
           <div class="details">
             has successfully completed the internship program<br/>
@@ -251,22 +340,170 @@ export class CertificateGenerator {
   }
   
   private static async storeCertificateRecord(data: CertificateData, certificateId: string): Promise<void> {
-    // Mock implementation - in production, store in database
-    console.log('💾 Stored certificate record:', certificateId);
+    const db = getDatabase();
+    if (!db) {
+      throw new Error('Database connection failed');
+    }
+    
+    try {
+      // Create certificates table if it doesn't exist
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS certificates (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          certificate_id TEXT UNIQUE NOT NULL,
+          student_id INTEGER NOT NULL,
+          student_username TEXT NOT NULL,
+          internship_title TEXT NOT NULL,
+          company_name TEXT NOT NULL,
+          supervisor_name TEXT NOT NULL,
+          start_date TEXT NOT NULL,
+          end_date TEXT NOT NULL,
+          duration_weeks INTEGER NOT NULL,
+          performance_rating REAL NOT NULL,
+          skills_demonstrated TEXT NOT NULL, -- JSON array
+          completion_date TEXT NOT NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (student_id) REFERENCES users(id)
+        )
+      `);
+      
+      // Insert certificate record
+      const insert = db.prepare(`
+        INSERT INTO certificates (
+          certificate_id, student_id, student_username, internship_title, company_name,
+          supervisor_name, start_date, end_date, duration_weeks, performance_rating,
+          skills_demonstrated, completion_date
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `);
+      
+      insert.run(
+        certificateId,
+        data.student_id,
+        data.student_username,
+        data.internship_title,
+        data.company_name,
+        data.supervisor_name,
+        data.start_date,
+        data.end_date,
+        data.duration_weeks,
+        data.performance_rating,
+        JSON.stringify(data.skills_demonstrated),
+        data.completion_date
+      );
+      
+      console.log('💾 Stored certificate record:', certificateId);
+    } catch (error) {
+      console.error('Error storing certificate record:', error);
+      throw error;
+    }
   }
   
   private static async getCertificateRecord(certificateId: string): Promise<CertificateData | null> {
-    // Mock implementation
-    return null;
+    const db = getDatabase();
+    if (!db) {
+      return null;
+    }
+    
+    try {
+      const query = db.prepare('SELECT * FROM certificates WHERE certificate_id = ?');
+      const record = query.get(certificateId) as any;
+      
+      if (!record) {
+        return null;
+      }
+      
+      return {
+        student_name: record.student_name,
+        student_id: record.student_id,
+        student_username: record.student_username,
+        internship_title: record.internship_title,
+        company_name: record.company_name,
+        supervisor_name: record.supervisor_name,
+        start_date: record.start_date,
+        end_date: record.end_date,
+        duration_weeks: record.duration_weeks,
+        performance_rating: record.performance_rating,
+        skills_demonstrated: JSON.parse(record.skills_demonstrated),
+        completion_date: record.completion_date,
+        certificate_id: record.certificate_id
+      };
+    } catch (error) {
+      console.error('Error getting certificate record:', error);
+      return null;
+    }
   }
   
   private static async getEmployabilityRecord(studentId: number): Promise<EmployabilityRecord | null> {
-    // Mock implementation
-    return null;
+    const db = getDatabase();
+    if (!db) {
+      return null;
+    }
+    
+    try {
+      // Create employability_records table if it doesn't exist
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS employability_records (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          student_id INTEGER UNIQUE NOT NULL,
+          internships_completed INTEGER DEFAULT 0,
+          total_duration_weeks INTEGER DEFAULT 0,
+          average_rating REAL DEFAULT 0,
+          skills_acquired TEXT, -- JSON array
+          certifications TEXT, -- JSON array
+          placement_ready_score INTEGER DEFAULT 0,
+          last_updated DATETIME DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY (student_id) REFERENCES users(id)
+        )
+      `);
+      
+      const query = db.prepare('SELECT * FROM employability_records WHERE student_id = ?');
+      const record = query.get(studentId) as EmployabilityRecord | undefined;
+      
+      return record || null;
+    } catch (error) {
+      console.error('Error getting employability record:', error);
+      return null;
+    }
   }
   
   private static async storeEmployabilityRecord(record: EmployabilityRecord): Promise<void> {
-    console.log('💾 Updated employability record for student:', record.student_id);
+    const db = getDatabase();
+    if (!db) {
+      throw new Error('Database connection failed');
+    }
+    
+    try {
+      const upsert = db.prepare(`
+        INSERT INTO employability_records (
+          student_id, internships_completed, total_duration_weeks, average_rating,
+          skills_acquired, certifications, placement_ready_score, last_updated
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ON CONFLICT(student_id) DO UPDATE SET
+          internships_completed = excluded.internships_completed,
+          total_duration_weeks = excluded.total_duration_weeks,
+          average_rating = excluded.average_rating,
+          skills_acquired = excluded.skills_acquired,
+          certifications = excluded.certifications,
+          placement_ready_score = excluded.placement_ready_score,
+          last_updated = excluded.last_updated
+      `);
+      
+      upsert.run(
+        record.student_id,
+        record.internships_completed,
+        record.total_duration_weeks,
+        record.average_rating,
+        JSON.stringify(record.skills_acquired),
+        JSON.stringify(record.certifications),
+        record.placement_ready_score,
+        record.last_updated
+      );
+      
+      console.log('💾 Updated employability record for student:', record.student_id);
+    } catch (error) {
+      console.error('Error storing employability record:', error);
+      throw error;
+    }
   }
   
   private static calculateAverageRating(existingRecord: EmployabilityRecord | null, newRating: number): number {

@@ -51,11 +51,27 @@ interface Feedback {
   created_at: string;
 }
 
+interface CalendarEvent {
+  id: number;
+  title: string;
+  description?: string;
+  event_type: 'INTERVIEW' | 'EXAM' | 'ACADEMIC' | 'DEADLINE' | 'PLACEMENT' | 'OTHER';
+  start_datetime: string;
+  end_datetime: string;
+  organizer_id?: number;
+  participants?: string; // JSON array of user IDs
+  location?: string;
+  meeting_url?: string;
+  status: 'SCHEDULED' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'RESCHEDULED';
+  created_at: string;
+}
+
 // In-memory storage (will reset on each deployment)
 let users: User[] = [];
 let internships: Internship[] = [];
 let applications: Application[] = [];
 let feedback: Feedback[] = [];
+let calendarEvents: CalendarEvent[] = [];
 
 // Initialize with sample data
 function initializeSampleData() {
@@ -174,7 +190,37 @@ function initializeSampleData() {
         }
       ];
       
-      console.log('Memory database initialized with default users');
+      // Add sample calendar events
+      calendarEvents = [
+        {
+          id: 1,
+          title: 'Internship Interview',
+          description: 'Technical interview for Frontend Developer Intern position',
+          event_type: 'INTERVIEW',
+          start_datetime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Tomorrow
+          end_datetime: new Date(Date.now() + 25 * 60 * 60 * 1000).toISOString(), // 1 hour duration
+          organizer_id: 1,
+          participants: JSON.stringify([2, 1]), // student and organizer
+          location: 'Room 101',
+          status: 'SCHEDULED',
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 2,
+          title: 'Midterm Exam',
+          description: 'Midterm exam for Database Systems',
+          event_type: 'EXAM',
+          start_datetime: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(), // In 2 days
+          end_datetime: new Date(Date.now() + 51 * 60 * 60 * 1000).toISOString(), // 3 hours duration
+          organizer_id: 6,
+          participants: JSON.stringify([2, 5]), // student participants
+          location: 'Exam Hall A',
+          status: 'SCHEDULED',
+          created_at: new Date().toISOString()
+        }
+      ];
+      
+      console.log('Memory database initialized with default users and calendar events');
     }).catch((error) => {
       console.error('Error initializing memory database:', error);
     });
@@ -429,6 +475,221 @@ export function getMemoryDatabase() {
       }
     },
 
+    // Calendar Event queries
+    createCalendarEvent: {
+      run: (title: string, description: string, event_type: string, start_datetime: string, end_datetime: string, organizer_id: number, participants: string, location: string, meeting_url: string, status: string) => {
+        const newEvent: CalendarEvent = {
+          id: calendarEvents.length + 1,
+          title,
+          description,
+          event_type: event_type as any,
+          start_datetime,
+          end_datetime,
+          organizer_id,
+          participants,
+          location,
+          meeting_url,
+          status: status as any,
+          created_at: new Date().toISOString()
+        };
+        calendarEvents.push(newEvent);
+        return { lastInsertRowid: newEvent.id };
+      }
+    },
+    
+    getCalendarEventsByUser: {
+      all: (userId: number, startDate: string, endDate: string) => {
+        return calendarEvents
+          .filter(event => {
+            // Check if user is organizer or participant
+            const isOrganizer = event.organizer_id === userId;
+            const isParticipant = event.participants && 
+              (event.participants.includes(`[${userId}]`) || 
+               event.participants.includes(`${userId},`) ||
+               event.participants.includes(`,${userId},`) ||
+               event.participants === `[${userId}]`);
+            
+            // Check date range
+            const eventStart = new Date(event.start_datetime);
+            const eventEnd = new Date(event.end_datetime);
+            const rangeStart = new Date(startDate);
+            const rangeEnd = new Date(endDate);
+            
+            const inDateRange = eventStart >= rangeStart && eventEnd <= rangeEnd;
+            
+            return (isOrganizer || isParticipant) && inDateRange;
+          })
+          .map(event => ({
+            ...event,
+            participants: event.participants ? JSON.parse(event.participants) : []
+          }));
+      }
+    },
+    
+    getCalendarEventsForDate: {
+      all: (date: string, userId?: number) => {
+        return calendarEvents
+          .filter(event => {
+            const eventDate = new Date(event.start_datetime).toISOString().split('T')[0];
+            const targetDate = new Date(date).toISOString().split('T')[0];
+            
+            const dateMatch = eventDate === targetDate;
+            
+            if (userId) {
+              const isOrganizer = event.organizer_id === userId;
+              const isParticipant = event.participants && 
+                (event.participants.includes(`[${userId}]`) || 
+                 event.participants.includes(`${userId},`) ||
+                 event.participants.includes(`,${userId},`) ||
+                 event.participants === `[${userId}]`);
+              return dateMatch && (isOrganizer || isParticipant);
+            }
+            
+            return dateMatch;
+          })
+          .map(event => ({
+            ...event,
+            participants: event.participants ? JSON.parse(event.participants) : []
+          }));
+      }
+    },
+    
+    getCalendarEventById: {
+      get: (id: number) => {
+        const event = calendarEvents.find(e => e.id === id);
+        if (!event) return null;
+        return {
+          ...event,
+          participants: event.participants ? JSON.parse(event.participants) : []
+        };
+      }
+    },
+    
+    updateCalendarEvent: {
+      run: (id: number, title: string, description: string, event_type: string, start_datetime: string, end_datetime: string, organizer_id: number, participants: string, location: string, meeting_url: string, status: string) => {
+        const eventIndex = calendarEvents.findIndex(e => e.id === id);
+        if (eventIndex !== -1) {
+          calendarEvents[eventIndex] = {
+            ...calendarEvents[eventIndex],
+            title,
+            description,
+            event_type: event_type as any,
+            start_datetime,
+            end_datetime,
+            organizer_id,
+            participants,
+            location,
+            meeting_url,
+            status: status as any
+            // Note: CalendarEvent interface doesn't include updated_at field
+          };
+        }
+        return { changes: eventIndex !== -1 ? 1 : 0 };
+      }
+    },
+    
+    deleteCalendarEvent: {
+      run: (id: number) => {
+        const initialLength = calendarEvents.length;
+        calendarEvents = calendarEvents.filter(e => e.id !== id);
+        return { changes: initialLength - calendarEvents.length };
+      }
+    },
+    
+    getUpcomingCalendarEvents: {
+      all: (userId: number, limit: number = 10) => {
+        const now = new Date().toISOString();
+        return calendarEvents
+          .filter(event => {
+            // Check if user is organizer or participant
+            const isOrganizer = event.organizer_id === userId;
+            const isParticipant = event.participants && 
+              (event.participants.includes(`[${userId}]`) || 
+               event.participants.includes(`${userId},`) ||
+               event.participants.includes(`,${userId},`) ||
+               event.participants === `[${userId}]`);
+            
+            // Check if event is in the future
+            const isFuture = event.start_datetime >= now;
+            
+            return (isOrganizer || isParticipant) && isFuture;
+          })
+          .sort((a, b) => new Date(a.start_datetime).getTime() - new Date(b.start_datetime).getTime())
+          .slice(0, limit)
+          .map(event => ({
+            ...event,
+            participants: event.participants ? JSON.parse(event.participants) : []
+          }));
+      }
+    },
+    
+    getCalendarEventsByType: {
+      all: (userId: number, eventType: string, startDate: string, endDate: string) => {
+        return calendarEvents
+          .filter(event => {
+            // Check if user is organizer or participant
+            const isOrganizer = event.organizer_id === userId;
+            const isParticipant = event.participants && 
+              (event.participants.includes(`[${userId}]`) || 
+               event.participants.includes(`${userId},`) ||
+               event.participants.includes(`,${userId},`) ||
+               event.participants === `[${userId}]`);
+            
+            // Check event type
+            const typeMatch = event.event_type === eventType;
+            
+            // Check date range
+            const eventStart = new Date(event.start_datetime);
+            const eventEnd = new Date(event.end_datetime);
+            const rangeStart = new Date(startDate);
+            const rangeEnd = new Date(endDate);
+            
+            const inDateRange = eventStart >= rangeStart && eventEnd <= rangeEnd;
+            
+            return (isOrganizer || isParticipant) && typeMatch && inDateRange;
+          })
+          .map(event => ({
+            ...event,
+            participants: event.participants ? JSON.parse(event.participants) : []
+          }));
+      }
+    },
+    
+    getCalendarEventsWithConflicts: {
+      all: (userId: number, startDateTime: string, endDateTime: string, excludeEventId?: number) => {
+        return calendarEvents
+          .filter(event => {
+            // Check if user is organizer or participant
+            const isOrganizer = event.organizer_id === userId;
+            const isParticipant = event.participants && 
+              (event.participants.includes(`[${userId}]`) || 
+               event.participants.includes(`${userId},`) ||
+               event.participants.includes(`,${userId},`) ||
+               event.participants === `[${userId}]`);
+            
+            // Exclude specific event if provided
+            const notExcluded = excludeEventId ? event.id !== excludeEventId : true;
+            
+            // Check for time conflicts
+            const eventStart = new Date(event.start_datetime);
+            const eventEnd = new Date(event.end_datetime);
+            const checkStart = new Date(startDateTime);
+            const checkEnd = new Date(endDateTime);
+            
+            const hasConflict = (
+              (checkStart < eventEnd && checkEnd > eventStart) ||
+              (checkStart >= eventStart && checkEnd <= eventEnd)
+            );
+            
+            return (isOrganizer || isParticipant) && notExcluded && hasConflict;
+          })
+          .map(event => ({
+            ...event,
+            participants: event.participants ? JSON.parse(event.participants) : []
+          }));
+      }
+    },
+
     // Analytics queries
     getUnplacedStudentsCount: {
       get: () => {
@@ -484,7 +745,7 @@ export function getMemoryDatabase() {
     },
     
     getRecentApplications: {
-      all: (limit: number = 10) => {
+      all: (limit: number) => {
         return applications
           .map(a => {
             const internship = internships.find(i => i.id === a.internship_id);
@@ -502,7 +763,7 @@ export function getMemoryDatabase() {
     },
     
     getTopInternships: {
-      all: (limit: number = 5) => {
+      all: (limit: number) => {
         // Count applications per internship
         const appCounts: Record<number, number> = {};
         applications.forEach(a => {
@@ -520,7 +781,7 @@ export function getMemoryDatabase() {
             };
           })
           .sort((a, b) => {
-            // Sort by application count first, then by creation date
+            // Sort by application count (descending), then by creation date (descending)
             if (b.application_count !== a.application_count) {
               return b.application_count - a.application_count;
             }
@@ -531,3 +792,9 @@ export function getMemoryDatabase() {
     }
   };
 }
+
+// Export the types for consistency
+export type { User, Internship, Application, Feedback, CalendarEvent };
+
+// Export the function
+// (Already exported as export function getMemoryDatabase())

@@ -64,7 +64,7 @@ export const GET = withAuth(async (req: AuthenticatedRequest) => {
     
     // Enrich recommendations with internship details
     const enrichedRecommendations = recommendations.map(rec => {
-      const internship = internships.find(i => i.id === rec.internship_id);
+      const internship = internships.find((i: any) => i.id === rec.internship_id);
       return {
         ...rec,
         internship: internship

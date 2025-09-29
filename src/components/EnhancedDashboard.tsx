@@ -304,8 +304,8 @@ function StaffMetrics({ metrics }: { metrics: any }) {
         color="green"
       />
       <MetricCard
-        title="Active Internships"
-        value={metrics.active_internships || 0}
+        title="Active Employers"
+        value={metrics.active_employers || 0}
         icon="💼"
         color="purple"
       />

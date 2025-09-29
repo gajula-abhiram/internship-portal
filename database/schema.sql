@@ -153,11 +153,14 @@ CREATE TABLE IF NOT EXISTS certificates (
 CREATE TABLE IF NOT EXISTS notifications (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   user_id INTEGER NOT NULL,
-  type TEXT NOT NULL CHECK (type IN ('APPLICATION', 'APPROVAL', 'INTERVIEW', 'OFFER', 'BADGE', 'GENERAL')),
+  type TEXT NOT NULL CHECK (type IN ('APPLICATION', 'APPROVAL', 'INTERVIEW', 'OFFER', 'BADGE', 'GENERAL', 'DEADLINE', 'FEEDBACK', 'REMINDER')),
   title TEXT NOT NULL,
   message TEXT NOT NULL,
   data TEXT, -- JSON with additional data
   is_read BOOLEAN DEFAULT 0,
+  priority TEXT DEFAULT 'NORMAL' CHECK (priority IN ('LOW', 'NORMAL', 'HIGH', 'URGENT')),
+  scheduled_for DATETIME, -- For scheduled notifications
+  sent_at DATETIME, -- When notification was actually sent
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
@@ -167,14 +170,14 @@ CREATE TABLE IF NOT EXISTS calendar_events (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
   description TEXT,
-  event_type TEXT CHECK (event_type IN ('INTERVIEW', 'EXAM', 'ACADEMIC', 'DEADLINE', 'PLACEMENT')),
+  event_type TEXT CHECK (event_type IN ('INTERVIEW', 'EXAM', 'ACADEMIC', 'DEADLINE', 'PLACEMENT', 'OTHER')),
   start_datetime DATETIME NOT NULL,
   end_datetime DATETIME NOT NULL,
   organizer_id INTEGER,
   participants TEXT, -- JSON array of user IDs
   location TEXT,
   meeting_url TEXT,
-  status TEXT DEFAULT 'SCHEDULED' CHECK (status IN ('SCHEDULED', 'COMPLETED', 'CANCELLED', 'RESCHEDULED')),
+  status TEXT DEFAULT 'SCHEDULED' CHECK (status IN ('SCHEDULED', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'RESCHEDULED')),
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (organizer_id) REFERENCES users(id)
 );
@@ -331,3 +334,37 @@ CREATE INDEX IF NOT EXISTS idx_mentor_requests_status ON mentor_approval_request
 CREATE INDEX IF NOT EXISTS idx_interview_schedules_student ON interview_schedules(student_id);
 CREATE INDEX IF NOT EXISTS idx_interview_schedules_interviewer ON interview_schedules(interviewer_id);
 CREATE INDEX IF NOT EXISTS idx_interview_schedules_datetime ON interview_schedules(scheduled_datetime);
+
+-- Chat System Tables for Mentor-Applicant Communication
+-- Implements "in-app chat between mentors and applicants to resolve queries"
+
+CREATE TABLE IF NOT EXISTS chat_rooms (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  application_id INTEGER NOT NULL,
+  student_id INTEGER NOT NULL,
+  mentor_id INTEGER NOT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (application_id) REFERENCES applications(id),
+  FOREIGN KEY (student_id) REFERENCES users(id),
+  FOREIGN KEY (mentor_id) REFERENCES users(id),
+  UNIQUE(application_id)
+);
+
+CREATE TABLE IF NOT EXISTS chat_messages (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  chat_room_id INTEGER NOT NULL,
+  sender_id INTEGER NOT NULL,
+  message TEXT NOT NULL,
+  is_read BOOLEAN DEFAULT 0,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (chat_room_id) REFERENCES chat_rooms(id),
+  FOREIGN KEY (sender_id) REFERENCES users(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_chat_rooms_application ON chat_rooms(application_id);
+CREATE INDEX IF NOT EXISTS idx_chat_rooms_student ON chat_rooms(student_id);
+CREATE INDEX IF NOT EXISTS idx_chat_rooms_mentor ON chat_rooms(mentor_id);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_room ON chat_messages(chat_room_id);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_sender ON chat_messages(sender_id);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_unread ON chat_messages(chat_room_id, is_read);

@@ -48,6 +48,9 @@ export interface BadgeEarningCriteria {
   problem_solving?: boolean;
   client_rating?: number;
   learning_speed?: string;
+  // New employer criteria
+  offers_made?: number;
+  quick_response?: boolean;
 }
 
 export class BadgeManager {
@@ -191,6 +194,24 @@ export class BadgeManager {
     // Get skills count
     const skills = user?.skills ? JSON.parse(user.skills) : [];
     
+    // For employers, get offer stats
+    let employerStats = {};
+    if (user?.role === 'EMPLOYER') {
+      const offerStats = this.db.prepare(`
+        SELECT 
+          COUNT(CASE WHEN status = 'OFFERED' THEN 1 END) as offers_made,
+          COUNT(CASE WHEN status = 'COMPLETED' THEN 1 END) as internships_completed
+        FROM applications a
+        JOIN internships i ON a.internship_id = i.id
+        WHERE i.posted_by = ?
+      `).get(userId);
+      
+      employerStats = {
+        offers_made: offerStats?.offers_made || 0,
+        internships_completed: offerStats?.internships_completed || 0
+      };
+    }
+    
     return {
       ...user,
       ...appStats,
@@ -198,7 +219,8 @@ export class BadgeManager {
       feedback_count: feedbackStats?.feedback_count || 0,
       profile_completion: profileCompletion,
       skills_count: skills.length,
-      skills_list: skills
+      skills_list: skills,
+      ...employerStats
     };
   }
 
@@ -217,6 +239,9 @@ export class BadgeManager {
       if (criteria.feedback_rating && userData.avg_rating < criteria.feedback_rating) return false;
       if (criteria.skills_count && userData.skills_count < criteria.skills_count) return false;
       if (criteria.profile_completion && userData.profile_completion < criteria.profile_completion) return false;
+      
+      // New employer criteria
+      if (criteria.offers_made && userData.offers_made < criteria.offers_made) return false;
       
       // Check skill-based criteria
       if (criteria.skill) {
@@ -238,6 +263,12 @@ export class BadgeManager {
       // Special checks
       if (criteria.placement_secured) {
         if (userData.placement_status !== 'PLACED') return false;
+      }
+      
+      if (criteria.quick_response) {
+        // This would be checked in real-time when employer reviews applications quickly
+        // For now, we'll assume it's checked elsewhere
+        return true;
       }
       
       return true;

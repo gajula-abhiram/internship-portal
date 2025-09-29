@@ -164,7 +164,63 @@ async function seedDatabase() {
       { username: 'sakshi.singh', name: 'Sakshi Singh', email: 'sakshi.singh@jec.ac.in', department: 'Electrical Engineering', semester: 7 },
       { username: 'anirudh.gupta', name: 'Anirudh Gupta', email: 'anirudh.gupta@rtu.ac.in', department: 'Computer Science', semester: 5 },
       { username: 'divya.mittal', name: 'Divya Mittal', email: 'divya.mittal@jec.ac.in', department: 'Information Technology', semester: 6 },
-      { username: 'harsh.agarwal', name: 'Harsh Agarwal', email: 'harsh.agarwal@rtu.ac.in', department: 'Mechanical Engineering', semester: 8 }
+      { username: 'harsh.agarwal', name: 'Harsh Agarwal', email: 'harsh.agarwal@rtu.ac.in', department: 'Mechanical Engineering', semester: 8 },
+      
+      // Additional students to increase the count
+      { username: 'aditi.sharma', name: 'Aditi Sharma', email: 'aditi.sharma@rtu.ac.in', department: 'Computer Science', semester: 5 },
+      { username: 'vikas.patel', name: 'Vikas Patel', email: 'vikas.patel@jec.ac.in', department: 'Information Technology', semester: 6 },
+      { username: 'priyanka.gupta', name: 'Priyanka Gupta', email: 'priyanka.gupta@rtu.ac.in', department: 'Electronics & Communication', semester: 7 },
+      { username: 'rahul.mishra', name: 'Rahul Mishra', email: 'rahul.mishra@jec.ac.in', department: 'Mechanical Engineering', semester: 4 },
+      { username: 'anita.jain', name: 'Anita Jain', email: 'anita.jain@rtu.ac.in', department: 'Civil Engineering', semester: 6 },
+      { username: 'sumit.verma', name: 'Sumit Verma', email: 'sumit.verma@jec.ac.in', department: 'Electrical Engineering', semester: 5 },
+      { username: 'poonam.singh', name: 'Poonam Singh', email: 'poonam.singh@rtu.ac.in', department: 'Computer Science', semester: 7 },
+      { username: 'akash.meena', name: 'Akash Meena', email: 'akash.meena@jec.ac.in', department: 'Information Technology', semester: 6 },
+      { username: 'sunita.sharma', name: 'Sunita Sharma', email: 'sunita.sharma@rtu.ac.in', department: 'Electronics & Communication', semester: 8 },
+      { username: 'deepak.jain', name: 'Deepak Jain', email: 'deepak.jain@jec.ac.in', department: 'Mechanical Engineering', semester: 5 },
+      
+      { username: 'anjali.gupta', name: 'Anjali Gupta', email: 'anjali.gupta@rtu.ac.in', department: 'Civil Engineering', semester: 7 },
+      { username: 'manoj.singh', name: 'Manoj Singh', email: 'manoj.singh@jec.ac.in', department: 'Electrical Engineering', semester: 6 },
+      { username: 'rekha.patel', name: 'Rekha Patel', email: 'rekha.patel@rtu.ac.in', department: 'Computer Science', semester: 5 },
+      { username: 'suresh.mishra', name: 'Suresh Mishra', email: 'suresh.mishra@jec.ac.in', department: 'Information Technology', semester: 8 },
+      { username: 'kavita.verma', name: 'Kavita Verma', email: 'kavita.verma@rtu.ac.in', department: 'Electronics & Communication', semester: 4 },
+      { username: 'raj.kumar', name: 'Raj Kumar', email: 'raj.kumar@jec.ac.in', department: 'Mechanical Engineering', semester: 6 },
+      { username: 'poonam.jain', name: 'Poonam Jain', email: 'poonam.jain@rtu.ac.in', department: 'Civil Engineering', semester: 7 },
+      { username: 'vikash.sharma', name: 'Vikash Sharma', email: 'vikash.sharma@jec.ac.in', department: 'Electrical Engineering', semester: 5 },
+      { username: 'radhika.singh', name: 'Radhika Singh', email: 'radhika.singh@rtu.ac.in', department: 'Computer Science', semester: 6 },
+      { username: 'amit.patel', name: 'Amit Patel', email: 'amit.patel@jec.ac.in', department: 'Information Technology', semester: 7 },
+      
+      { username: 'neha.mishra', name: 'Neha Mishra', email: 'neha.mishra@rtu.ac.in', department: 'Electronics & Communication', semester: 5 },
+      { username: 'ravi.verma', name: 'Ravi Verma', email: 'ravi.verma@jec.ac.in', department: 'Mechanical Engineering', semester: 8 },
+      { username: 'poonam.mishra', name: 'Poonam Mishra', email: 'poonam.mishra@rtu.ac.in', department: 'Civil Engineering', semester: 6 },
+      { username: 'sandeep.jain', name: 'Sandeep Jain', email: 'sandeep.jain@jec.ac.in', department: 'Electrical Engineering', semester: 4 },
+      { username: 'anjali.singh', name: 'Anjali Singh', email: 'anjali.singh@rtu.ac.in', department: 'Computer Science', semester: 7 },
+      { username: 'manish.gupta', name: 'Manish Gupta', email: 'manish.gupta@jec.ac.in', department: 'Information Technology', semester: 5 },
+      { username: 'rekha.verma', name: 'Rekha Verma', email: 'rekha.verma@rtu.ac.in', department: 'Electronics & Communication', semester: 6 },
+      { username: 'sunita.patel', name: 'Sunita Patel', email: 'sunita.patel@jec.ac.in', department: 'Mechanical Engineering', semester: 7 },
+      { username: 'deepak.singh', name: 'Deepak Singh', email: 'deepak.singh@rtu.ac.in', department: 'Civil Engineering', semester: 5 },
+      { username: 'poonam.verma', name: 'Poonam Verma', email: 'poonam.verma@jec.ac.in', department: 'Electrical Engineering', semester: 8 },
+      
+      { username: 'vikas.sharma', name: 'Vikas Sharma', email: 'vikas.sharma@rtu.ac.in', department: 'Computer Science', semester: 4 },
+      { username: 'radhika.jain', name: 'Radhika Jain', email: 'radhika.jain@jec.ac.in', department: 'Information Technology', semester: 6 },
+      { username: 'amit.mishra', name: 'Amit Mishra', email: 'amit.mishra@rtu.ac.in', department: 'Electronics & Communication', semester: 7 },
+      { username: 'neha.verma', name: 'Neha Verma', email: 'neha.verma@jec.ac.in', department: 'Mechanical Engineering', semester: 5 },
+      { username: 'ravi.patel', name: 'Ravi Patel', email: 'ravi.patel@rtu.ac.in', department: 'Civil Engineering', semester: 6 },
+      { username: 'poonam.sharma', name: 'Poonam Sharma', email: 'poonam.sharma@jec.ac.in', department: 'Electrical Engineering', semester: 7 },
+      { username: 'sandeep.singh', name: 'Sandeep Singh', email: 'sandeep.singh@rtu.ac.in', department: 'Computer Science', semester: 5 },
+      { username: 'anjali.verma', name: 'Anjali Verma', email: 'anjali.verma@jec.ac.in', department: 'Information Technology', semester: 8 },
+      { username: 'manish.jain', name: 'Manish Jain', email: 'manish.jain@rtu.ac.in', department: 'Electronics & Communication', semester: 4 },
+      { username: 'rekha.sharma', name: 'Rekha Sharma', email: 'rekha.sharma@jec.ac.in', department: 'Mechanical Engineering', semester: 6 },
+      
+      { username: 'sunita.mishra', name: 'Sunita Mishra', email: 'sunita.mishra@rtu.ac.in', department: 'Civil Engineering', semester: 7 },
+      { username: 'deepak.verma', name: 'Deepak Verma', email: 'deepak.verma@jec.ac.in', department: 'Electrical Engineering', semester: 5 },
+      { username: 'vikash.jain', name: 'Vikash Jain', email: 'vikash.jain@rtu.ac.in', department: 'Computer Science', semester: 6 },
+      { username: 'radhika.verma', name: 'Radhika Verma', email: 'radhika.verma@jec.ac.in', department: 'Information Technology', semester: 7 },
+      { username: 'amit.sharma2', name: 'Amit Sharma', email: 'amit.sharma2@rtu.ac.in', department: 'Electronics & Communication', semester: 5 },
+      { username: 'neha.patel', name: 'Neha Patel', email: 'neha.patel@rtu.ac.in', department: 'Mechanical Engineering', semester: 8 },
+      { username: 'ravi.sharma', name: 'Ravi Sharma', email: 'ravi.sharma@jec.ac.in', department: 'Civil Engineering', semester: 4 },
+      { username: 'poonam.mishra2', name: 'Poonam Mishra', email: 'poonam.mishra2@rtu.ac.in', department: 'Electrical Engineering', semester: 6 },
+      { username: 'sandeep.verma', name: 'Sandeep Verma', email: 'sandeep.verma@jec.ac.in', department: 'Computer Science', semester: 7 },
+      { username: 'anjali.patel', name: 'Anjali Patel', email: 'anjali.patel@rtu.ac.in', department: 'Information Technology', semester: 5 }
     ];
 
     // Staff members
@@ -546,6 +602,188 @@ async function seedDatabase() {
         stipend_min: 20000,
         stipend_max: 31000,
         is_placement: true
+      },
+      
+      // Additional internships to increase the count
+      {
+        title: 'AI Research Intern',
+        description: 'Artificial intelligence research internship at Jaipur AI Labs. Work on cutting-edge machine learning projects and neural network architectures.',
+        required_skills: ['Python', 'TensorFlow', 'PyTorch', 'Machine Learning'],
+        eligible_departments: ['Computer Science', 'Information Technology', 'Electronics & Communication'],
+        stipend_min: 12000,
+        stipend_max: 18000,
+        is_placement: false
+      },
+      {
+        title: 'Blockchain Developer',
+        description: 'Blockchain development internship at Udaipur Blockchain Solutions. Build decentralized applications and smart contracts.',
+        required_skills: ['Solidity', 'JavaScript', 'Web3', 'Ethereum'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 15000,
+        stipend_max: 22000,
+        is_placement: false
+      },
+      {
+        title: 'Data Science Intern',
+        description: 'Data science internship at Jodhpur Analytics. Analyze large datasets, build predictive models, and create data visualizations.',
+        required_skills: ['Python', 'R', 'SQL', 'Data Visualization'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 13000,
+        stipend_max: 19000,
+        is_placement: false
+      },
+      {
+        title: 'IoT Solutions Engineer',
+        description: 'Internet of Things internship at Bikaner IoT Solutions. Design and implement IoT systems for smart cities and industrial automation.',
+        required_skills: ['IoT', 'Embedded Systems', 'C++', 'Cloud Computing'],
+        eligible_departments: ['Electronics & Communication', 'Electrical Engineering', 'Computer Science'],
+        stipend_min: 11000,
+        stipend_max: 17000,
+        is_placement: false
+      },
+      {
+        title: 'Cybersecurity Specialist',
+        description: 'Cybersecurity internship at Ajmer Security Corp. Conduct penetration testing, vulnerability assessments, and security audits.',
+        required_skills: ['Cybersecurity', 'Ethical Hacking', 'Network Security', 'Incident Response'],
+        eligible_departments: ['Computer Science', 'Information Technology', 'Electronics & Communication'],
+        stipend_min: 14000,
+        stipend_max: 20000,
+        is_placement: false
+      },
+      {
+        title: 'Cloud Infrastructure Engineer',
+        description: 'Cloud computing internship at Kota Cloud Services. Deploy and manage cloud infrastructure on AWS, Azure, and Google Cloud.',
+        required_skills: ['AWS', 'Azure', 'Docker', 'Kubernetes'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 16000,
+        stipend_max: 24000,
+        is_placement: false
+      },
+      {
+        title: 'Mobile App Developer',
+        description: 'Mobile application development internship at Alwar Mobile Solutions. Build native and cross-platform mobile apps for iOS and Android.',
+        required_skills: ['React Native', 'Flutter', 'iOS', 'Android'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 12000,
+        stipend_max: 18000,
+        is_placement: false
+      },
+      {
+        title: 'Game Developer Intern',
+        description: 'Game development internship at Udaipur Game Studios. Create 2D and 3D games using Unity and Unreal Engine.',
+        required_skills: ['Unity', 'C#', 'Game Design', '3D Modeling'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 13000,
+        stipend_max: 19000,
+        is_placement: false
+      },
+      {
+        title: 'Robotics Engineer',
+        description: 'Robotics internship at Jaipur Robotics Lab. Design and program robots for industrial and research applications.',
+        required_skills: ['Robotics', 'ROS', 'Python', 'Control Systems'],
+        eligible_departments: ['Electronics & Communication', 'Mechanical Engineering', 'Electrical Engineering'],
+        stipend_min: 14000,
+        stipend_max: 21000,
+        is_placement: false
+      },
+      {
+        title: 'Renewable Energy Analyst',
+        description: 'Renewable energy internship at Jaisalmer Green Energy. Analyze solar and wind energy systems for optimal performance.',
+        required_skills: ['Renewable Energy', 'MATLAB', 'Energy Systems', 'Data Analysis'],
+        eligible_departments: ['Electrical Engineering', 'Mechanical Engineering'],
+        stipend_min: 12000,
+        stipend_max: 18000,
+        is_placement: false
+      },
+      {
+        title: 'Software Quality Assurance',
+        description: 'QA engineering internship at Bharatpur Software Testing. Develop test cases, automate testing, and ensure software quality.',
+        required_skills: ['Testing', 'Selenium', 'Test Automation', 'Bug Tracking'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 11000,
+        stipend_max: 16000,
+        is_placement: false
+      },
+      {
+        title: 'Network Administrator',
+        description: 'Network administration internship at Hanumangarh Networks. Manage enterprise networks, configure routers and switches.',
+        required_skills: ['Networking', 'Cisco', 'Network Security', 'Troubleshooting'],
+        eligible_departments: ['Computer Science', 'Electronics & Communication'],
+        stipend_min: 13000,
+        stipend_max: 19000,
+        is_placement: false
+      },
+      {
+        title: 'Database Administrator',
+        description: 'Database administration internship at Dausa Data Systems. Manage database performance, security, and backups.',
+        required_skills: ['SQL', 'Oracle', 'MySQL', 'Database Security'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 14000,
+        stipend_max: 20000,
+        is_placement: false
+      },
+      {
+        title: 'UI/UX Designer',
+        description: 'User interface and experience design internship at Sriganganagar Design Studio. Create wireframes, prototypes, and user interfaces.',
+        required_skills: ['UI/UX Design', 'Figma', 'Adobe XD', 'Prototyping'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 12000,
+        stipend_max: 17000,
+        is_placement: false
+      },
+      {
+        title: 'DevOps Engineer',
+        description: 'DevOps internship at Ganganagar Tech Solutions. Implement CI/CD pipelines, automate deployment, and manage cloud infrastructure.',
+        required_skills: ['DevOps', 'Jenkins', 'Docker', 'Kubernetes'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 15000,
+        stipend_max: 23000,
+        is_placement: false
+      },
+      {
+        title: 'Full Stack Developer',
+        description: 'Full stack development internship at Sawai Madhopur Web Solutions. Build complete web applications using modern technologies.',
+        required_skills: ['JavaScript', 'React', 'Node.js', 'MongoDB'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 14000,
+        stipend_max: 21000,
+        is_placement: false
+      },
+      {
+        title: 'Technical Writer',
+        description: 'Technical documentation internship at Jhalawar Tech Docs. Create user manuals, API documentation, and technical guides.',
+        required_skills: ['Technical Writing', 'Documentation', 'API', 'Markdown'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 10000,
+        stipend_max: 15000,
+        is_placement: false
+      },
+      {
+        title: 'System Administrator',
+        description: 'System administration internship at Nathdwara IT Services. Manage servers, troubleshoot issues, and maintain IT infrastructure.',
+        required_skills: ['Linux', 'Windows Server', 'Troubleshooting', 'Scripting'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 13000,
+        stipend_max: 19000,
+        is_placement: false
+      },
+      {
+        title: 'Digital Marketing Intern',
+        description: 'Digital marketing internship at Pushkar Marketing Solutions. Manage social media, SEO, and online advertising campaigns.',
+        required_skills: ['Digital Marketing', 'SEO', 'Social Media', 'Google Analytics'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 11000,
+        stipend_max: 16000,
+        is_placement: false
+      },
+      {
+        title: 'Business Intelligence Analyst',
+        description: 'Business intelligence internship at Mount Abu Analytics. Create dashboards, analyze business data, and generate insights.',
+        required_skills: ['Business Intelligence', 'Tableau', 'Power BI', 'Data Analysis'],
+        eligible_departments: ['Computer Science', 'Information Technology'],
+        stipend_min: 15000,
+        stipend_max: 22000,
+        is_placement: false
       }
     ];
 
@@ -579,8 +817,8 @@ async function seedDatabase() {
     
     const statuses = ['APPLIED', 'MENTOR_APPROVED', 'MENTOR_REJECTED', 'INTERVIEWED', 'OFFERED', 'NOT_OFFERED', 'COMPLETED'];
     
-    // Create 100+ applications for better demonstration with more students and internships
-    for (let i = 0; i < 125; i++) {
+    // Create 300+ applications for better demonstration with more students and internships
+    for (let i = 0; i < 300; i++) {
       const randomStudentId = studentIds[Math.floor(Math.random() * studentIds.length)];
       const randomInternshipId = internshipIds[Math.floor(Math.random() * internshipIds.length)];
       const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
@@ -625,7 +863,7 @@ async function seedDatabase() {
     ];
 
     // Create feedback for more applications
-    for (let i = 0; i < Math.min(25, applicationIds.length); i++) {
+    for (let i = 0; i < Math.min(100, applicationIds.length); i++) {
       const randomEmployerId = employerIds[Math.floor(Math.random() * employerIds.length)];
       const randomRating = Math.floor(Math.random() * 5) + 1;
       const randomComment = feedbackComments[Math.floor(Math.random() * feedbackComments.length)];
