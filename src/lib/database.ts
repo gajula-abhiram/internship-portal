@@ -251,6 +251,9 @@ export function getDbQueries() {
   
   try {
     return {
+      // Expose the database connection for cases where we need to create new prepared statements
+      db: db,
+      
       // User queries
       createUser: db.prepare(`
         INSERT INTO users (username, password_hash, role, name, email, department, current_semester, skills, resume)

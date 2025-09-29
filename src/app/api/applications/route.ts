@@ -105,6 +105,33 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
     // Get created application with details
     const newApplications = queries.getApplicationsByStudent.all(user.id);
     const newApplication = newApplications.find((app: any) => app.internship_id === internship_id);
+    
+    // Initialize application tracking if application was created successfully
+    if (newApplication && newApplication.id) {
+      // Initialize default tracking steps for the new application
+      const defaultSteps = [
+        { step: 'Application Submitted', status: 'COMPLETED' },
+        { step: 'Resume Review', status: 'PENDING' },
+        { step: 'Document Verification', status: 'PENDING' },
+        { step: 'Mentor Review', status: 'PENDING' },
+        { step: 'Employer Review', status: 'PENDING' },
+        { step: 'Interview Scheduling', status: 'PENDING' },
+        { step: 'Interview Process', status: 'PENDING' },
+        { step: 'Feedback Collection', status: 'PENDING' },
+        { step: 'Final Decision', status: 'PENDING' },
+        { step: 'Offer Processing', status: 'PENDING' }
+      ];
+
+      const trackingStmt = queries.db.prepare(`
+        INSERT INTO application_tracking (application_id, step, status, completed_at)
+        VALUES (?, ?, ?, ?)
+      `);
+
+      defaultSteps.forEach(track => {
+        const completedAt = track.status === 'COMPLETED' ? new Date().toISOString() : null;
+        trackingStmt.run(newApplication.id, track.step, track.status, completedAt);
+      });
+    }
 
     // Send notifications
     await NotificationService.notifyApplicationSubmitted(

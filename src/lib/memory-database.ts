@@ -66,12 +66,44 @@ interface CalendarEvent {
   created_at: string;
 }
 
+interface ChatRoom {
+  id: number;
+  application_id: number;
+  student_id: number;
+  mentor_id: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ChatMessage {
+  id: number;
+  chat_room_id: number;
+  sender_id: number;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+}
+
+interface ApplicationTracking {
+  id: number;
+  application_id: number;
+  step: string;
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'SKIPPED';
+  completed_at: string | null;
+  notes: string | null;
+  actor_id: number | null;
+  created_at: string;
+}
+
 // In-memory storage (will reset on each deployment)
 let users: User[] = [];
 let internships: Internship[] = [];
 let applications: Application[] = [];
 let feedback: Feedback[] = [];
 let calendarEvents: CalendarEvent[] = [];
+let chatRooms: ChatRoom[] = [];
+let chatMessages: ChatMessage[] = [];
+let applicationTracking: ApplicationTracking[] = [];
 
 // Initialize with synthetic data for production
 function initializeSampleData() {
@@ -249,6 +281,72 @@ function initializeSampleData() {
           location: 'Room 101',
           status: 'SCHEDULED',
           created_at: new Date().toISOString()
+        }
+      ];
+      
+      // Add sample chat rooms
+      chatRooms = [
+        {
+          id: 1,
+          application_id: 1,
+          student_id: 5,
+          mentor_id: 7,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+      ];
+      
+      // Add sample chat messages
+      chatMessages = [
+        {
+          id: 1,
+          chat_room_id: 1,
+          sender_id: 5,
+          message: 'Hello, I have a question about the internship requirements.',
+          is_read: false,
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 2,
+          chat_room_id: 1,
+          sender_id: 7,
+          message: 'Hi there! What would you like to know about the internship?',
+          is_read: false,
+          created_at: new Date(Date.now() + 60000).toISOString() // 1 minute later
+        }
+      ];
+      
+      // Add sample application tracking
+      applicationTracking = [
+        {
+          id: 1,
+          application_id: 1,
+          step: 'Application Submitted',
+          status: 'COMPLETED',
+          completed_at: new Date().toISOString(),
+          notes: 'Application successfully submitted',
+          actor_id: 5,
+          created_at: new Date().toISOString()
+        },
+        {
+          id: 2,
+          application_id: 1,
+          step: 'Document Verification',
+          status: 'COMPLETED',
+          completed_at: new Date(Date.now() + 3600000).toISOString(), // 1 hour later
+          notes: 'Documents verified successfully',
+          actor_id: 7,
+          created_at: new Date(Date.now() + 3600000).toISOString()
+        },
+        {
+          id: 3,
+          application_id: 1,
+          step: 'Mentor Review',
+          status: 'IN_PROGRESS',
+          completed_at: null,
+          notes: 'Currently under mentor review',
+          actor_id: 7,
+          created_at: new Date(Date.now() + 7200000).toISOString() // 2 hours later
         }
       ];
       
@@ -821,7 +919,141 @@ export function getMemoryDatabase() {
           })
           .slice(0, limit);
       }
-    }
+    },
+    
+    // Chat Room queries
+    createChatRoom: {
+      run: (application_id: number, student_id: number, mentor_id: number) => {
+        const newChatRoom: ChatRoom = {
+          id: chatRooms.length + 1,
+          application_id,
+          student_id,
+          mentor_id,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+        chatRooms.push(newChatRoom);
+        return { lastInsertRowid: newChatRoom.id };
+      }
+    },
+    
+    getChatRoomByApplication: {
+      get: (application_id: number) => {
+        return chatRooms.find(room => room.application_id === application_id) || null;
+      }
+    },
+    
+    getChatRoomsByUser: {
+      all: (user_id: number) => {
+        return chatRooms.filter(room => room.student_id === user_id || room.mentor_id === user_id);
+      }
+    },
+    
+    updateChatRoom: {
+      run: (id: number) => {
+        const roomIndex = chatRooms.findIndex(room => room.id === id);
+        if (roomIndex !== -1) {
+          chatRooms[roomIndex] = {
+            ...chatRooms[roomIndex],
+            updated_at: new Date().toISOString()
+          };
+        }
+        return { changes: roomIndex !== -1 ? 1 : 0 };
+      }
+    },
+    
+    // Chat Message queries
+    createChatMessage: {
+      run: (chat_room_id: number, sender_id: number, message: string) => {
+        const newChatMessage: ChatMessage = {
+          id: chatMessages.length + 1,
+          chat_room_id,
+          sender_id,
+          message,
+          is_read: false,
+          created_at: new Date().toISOString()
+        };
+        chatMessages.push(newChatMessage);
+        return { lastInsertRowid: newChatMessage.id };
+      }
+    },
+    
+    getChatMessagesByRoom: {
+      all: (chat_room_id: number) => {
+        return chatMessages
+          .filter(msg => msg.chat_room_id === chat_room_id)
+          .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      }
+    },
+    
+    markMessagesAsRead: {
+      run: (chat_room_id: number, user_id: number) => {
+        let changes = 0;
+        chatMessages.forEach(msg => {
+          if (msg.chat_room_id === chat_room_id && msg.sender_id !== user_id && !msg.is_read) {
+            msg.is_read = true;
+            changes++;
+          }
+        });
+        return { changes };
+      }
+    },
+    
+    getUnreadMessageCount: {
+      get: (user_id: number) => {
+        const count = chatMessages.filter(msg => {
+          // Find chat rooms where user is either student or mentor
+          const room = chatRooms.find(r => r.id === msg.chat_room_id);
+          if (!room) return false;
+          const isParticipant = room.student_id === user_id || room.mentor_id === user_id;
+          return isParticipant && msg.sender_id !== user_id && !msg.is_read;
+        }).length;
+        return { count };
+      }
+    },
+    
+    // Application Tracking queries
+    createApplicationTracking: {
+      run: (application_id: number, step: string, status: string, completed_at: string | null, notes: string | null, actor_id: number | null) => {
+        const newTracking: ApplicationTracking = {
+          id: applicationTracking.length + 1,
+          application_id,
+          step,
+          status: status as any,
+          completed_at,
+          notes,
+          actor_id,
+          created_at: new Date().toISOString()
+        };
+        applicationTracking.push(newTracking);
+        return { lastInsertRowid: newTracking.id };
+      }
+    },
+    
+    getApplicationTracking: {
+      all: (application_id: number) => {
+        return applicationTracking
+          .filter(track => track.application_id === application_id)
+          .sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      }
+    },
+    
+    updateApplicationTracking: {
+      run: (id: number, status: string, completed_at: string | null, notes: string | null, actor_id: number | null) => {
+        const trackIndex = applicationTracking.findIndex(track => track.id === id);
+        if (trackIndex !== -1) {
+          applicationTracking[trackIndex] = {
+            ...applicationTracking[trackIndex],
+            status: status as any,
+            completed_at,
+            notes,
+            actor_id,
+            created_at: applicationTracking[trackIndex].created_at // Keep original creation time
+          };
+        }
+        return { changes: trackIndex !== -1 ? 1 : 0 };
+      }
+    },
   };
 }
 
