@@ -51,8 +51,5 @@
       "path": "/api/health",
       "schedule": "*/5 * * * *"
     }
-  ],
-  "typescript": {
-    "tsconfigPath": "tsconfig.json"
-  }
+  ]
 }
