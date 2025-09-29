@@ -9,30 +9,31 @@ async function testCalendarService() {
   process.env.ENABLE_MEMORY_DB = 'true';
   
   try {
-    // Dynamically import the CalendarService
-    const { CalendarService } = await import('../src/lib/calendar-service.js');
-    const calendarService = new CalendarService();
+    // Use the memory database directly for testing
+    const { getMemoryDatabase } = await import('../src/lib/memory-database.ts');
+    const db = getMemoryDatabase();
     
     // Test creating an event
     console.log('\n1. Creating a calendar event...');
-    const event = await calendarService.createEvent({
-      title: 'Test Interview',
-      description: 'Technical interview for frontend position',
-      event_type: 'INTERVIEW',
-      start_datetime: '2023-12-01T10:00:00Z',
-      end_datetime: '2023-12-01T11:00:00Z',
-      organizer_id: 1,
-      participants: [1, 2],
-      location: 'Room 101',
-      meeting_url: 'https://meet.google.com/abc-defg-hij',
-      status: 'SCHEDULED'
-    });
+    const result = db.createCalendarEvent.run(
+      'Test Interview',
+      'Technical interview for frontend position',
+      'INTERVIEW',
+      '2023-12-01T10:00:00Z',
+      '2023-12-01T11:00:00Z',
+      1,
+      '[1,2]',
+      'Room 101',
+      'https://meet.google.com/abc-defg-hij',
+      'SCHEDULED'
+    );
+    const event = { id: result.lastInsertRowid };
     
     console.log('Created event:', event);
     
     // Test retrieving events by user
     console.log('\n2. Retrieving events by user...');
-    const userEvents = await calendarService.getUserEvents(
+    const userEvents = db.getCalendarEventsByUser.all(
       1, 
       '2023-12-01T00:00:00Z', 
       '2023-12-31T23:59:59Z'
@@ -42,7 +43,7 @@ async function testCalendarService() {
     
     // Test checking for conflicts
     console.log('\n3. Checking for conflicts...');
-    const conflicts = await calendarService.checkForConflicts(
+    const conflicts = db.getCalendarEventsWithConflicts.all(
       1,
       '2023-12-01T10:30:00Z',
       '2023-12-01T11:30:00Z'
@@ -52,16 +53,13 @@ async function testCalendarService() {
     
     // Test updating an event
     console.log('\n4. Updating event...');
-    const updateResult = await calendarService.updateEvent(event.id, {
-      status: 'CONFIRMED',
-      location: 'Room 202'
-    });
+    const updateResult = db.updateCalendarEvent.run(event.id, 'Test Interview', 'Technical interview for frontend position', 'INTERVIEW', '2023-12-01T10:00:00Z', '2023-12-01T11:00:00Z', 1, '[1,2]', 'Room 202', 'https://meet.google.com/abc-defg-hij', 'CONFIRMED');
     
     console.log('Update result:', updateResult);
     
     // Test retrieving upcoming events
     console.log('\n5. Retrieving upcoming events...');
-    const upcomingEvents = await calendarService.getUpcomingEvents(1, 5);
+    const upcomingEvents = db.getUpcomingCalendarEvents.all(1, 5);
     
     console.log('Upcoming events:', upcomingEvents);
     

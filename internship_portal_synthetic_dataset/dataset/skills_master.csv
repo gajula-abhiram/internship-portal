@@ -1,0 +1,41 @@
+skill_id,name,category
+1,Python,Programming
+2,Java,Programming
+3,C++,Programming
+4,JavaScript,Programming
+5,SQL,Data
+6,Power BI,Data
+7,Excel,Data
+8,Pandas,Data
+9,TensorFlow,AI/ML
+10,PyTorch,AI/ML
+11,Scikit-learn,AI/ML
+12,MATLAB/Simulink,Electrical
+13,Power Electronics,Electrical
+14,Embedded C,Electrical
+15,PCB Design,Electrical
+16,Raspberry Pi,IoT
+17,Arduino,IoT
+18,MQTT,IoT
+19,Node.js,Web
+20,React,Web
+21,Flask,Web
+22,Django,Web
+23,Git,DevOps
+24,Docker,DevOps
+25,SolidWorks,Mechanical
+26,AutoCAD,Mechanical
+27,ANSYS,Mechanical
+28,SCADA,Industrial
+29,PLC,Industrial
+30,Communication,Soft
+31,Teamwork,Soft
+32,Problem Solving,Soft
+33,Time Management,Soft
+34,Documentation,Soft
+35,Keras,AI/ML
+36,FastAPI,Web
+37,Power System Analysis,Electrical
+38,ETAP,Electrical
+39,PSCAD,Electrical
+40,Altium,Electrical

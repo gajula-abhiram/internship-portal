@@ -1,125 +1,147 @@
-# Vercel Deployment Guide
+# Vercel Deployment Guide for Internship Portal
 
-This guide explains how to deploy the Internship Portal application to Vercel via GitHub.
+This guide provides step-by-step instructions for deploying the Internship Portal to Vercel.
 
 ## Prerequisites
 
-1. A GitHub account with repository access
-2. A Vercel account
-3. Repository cloned locally (optional, for local testing)
+1. A GitHub account
+2. A Vercel account (free tier available)
+3. This repository pushed to GitHub
 
 ## Deployment Steps
 
-### 1. Connect Repository to Vercel
+### 1. Push Code to GitHub
 
-1. Go to [Vercel Dashboard](https://vercel.com/dashboard)
-2. Click "New Project"
-3. Import your GitHub repository
-4. Configure the project settings:
-   - Framework Preset: Next.js
-   - Build Command: `npm run build`
-   - Output Directory: `.next`
-   - Install Command: `npm install`
-
-### 2. Environment Variables
-
-The application is configured to work with Vercel's serverless environment using in-memory database by default. The following environment variables are set in `vercel.json`:
-
-- `VERCEL=1`
-- `VERCEL_ENV=production`
-- `NODE_ENV=production`
-- `ENABLE_MEMORY_DB=true`
-- `DATABASE_URL=memory://`
-
-For security, you should set these secrets in Vercel dashboard:
-- `JWT_SECRET` - For JWT token signing
-- `NEXTAUTH_SECRET` - For NextAuth.js
-
-### 3. Deploy via GitHub Actions
-
-This repository includes a GitHub Actions workflow that automatically deploys to Vercel:
-
-1. On push to `main` or `master` branch: Deploys to production
-2. On pull requests to `main` or `master` branch: Creates preview deployments
-
-The workflow requires the following secrets to be set in your GitHub repository:
-- `VERCEL_ORG_ID` - Your Vercel organization ID
-- `VERCEL_PROJECT_ID` - Your Vercel project ID
-- `VERCEL_TOKEN` - Your Vercel authentication token
-
-### 4. Manual Deployment (Optional)
-
-If you prefer to deploy manually:
+If you haven't already, push your code to a GitHub repository:
 
 ```bash
-# Install Vercel CLI globally
-npm install -g vercel
-
-# Login to your Vercel account
-vercel login
-
-# Deploy to production
-vercel --prod
+git init
+git add .
+git commit -m "Initial commit"
+git branch -M main
+git remote add origin https://github.com/your-username/internship-portal.git
+git push -u origin main
 ```
 
-## Serverless Considerations
+### 2. Connect to Vercel
 
-This application is optimized for Vercel's serverless environment:
+1. Go to [vercel.com](https://vercel.com)
+2. Sign in or create an account
+3. Click "New Project"
+4. Import your GitHub repository
+5. Configure the project settings:
+   - Framework Preset: Next.js
+   - Root Directory: Leave empty (or `.`)
+   - Build Command: `npm run build`
+   - Output Directory: `.next`
 
-1. **Database**: Uses in-memory database for serverless deployment to avoid filesystem issues
-2. **File Uploads**: Not currently implemented for serverless (would require external storage like AWS S3)
-3. **Cron Jobs**: Health checks are configured via Vercel Cron jobs
-4. **Memory Usage**: Configured with 1024MB memory for API functions
+### 3. Environment Variables
+
+The application is configured to work with Vercel's serverless environment using an in-memory database. No additional environment variables are required for basic deployment.
+
+However, if you want to customize the deployment, you can set these optional environment variables in the Vercel dashboard:
+
+- `ENABLE_MEMORY_DB`: Set to `true` to explicitly use memory database
+- `DATABASE_URL`: Set to `memory://` to explicitly use memory database
+
+### 4. Deploy
+
+1. Click "Deploy"
+2. Wait for the build to complete (usually 1-3 minutes)
+3. Your application will be available at a `.vercel.app` URL
+
+## How It Works
+
+### Database Handling
+
+The application automatically uses an in-memory database when deployed to Vercel, which is appropriate for serverless environments. This is configured in `src/lib/database.ts`:
+
+```javascript
+// Check if we're in Vercel production environment
+const isVercelProduction = process.env.VERCEL === '1';
+
+export function getDatabase() {
+  // Use memory database for Vercel production or when ENABLE_MEMORY_DB is set
+  if (isVercelProduction || process.env.ENABLE_MEMORY_DB === 'true') {
+    console.log('Using memory database for serverless environment');
+    return null; // Memory database will be handled in getDbQueries
+  }
+  // ... rest of the database initialization
+}
+```
+
+### Memory Database
+
+The memory database implementation in `src/lib/memory-database.ts` provides a complete in-memory alternative to SQLite with the same interface. It's pre-populated with realistic sample data for demonstration.
+
+## Custom Domain (Optional)
+
+To use a custom domain:
+
+1. In your Vercel project dashboard, go to Settings > Domains
+2. Add your domain
+3. Follow the instructions to configure DNS records with your domain provider
+
+## Monitoring and Analytics
+
+Vercel provides built-in analytics and monitoring:
+
+1. Visit your project dashboard on Vercel
+2. Click on "Analytics" to view usage statistics
+3. Click on "Logs" to view real-time logs
+4. Set up alerts in the "Monitoring" section
 
 ## Troubleshooting
 
-### Common Issues
+### Build Failures
 
-1. **Build Failures**: Ensure all dependencies are correctly listed in `package.json`
-2. **Environment Variables**: Check that all required environment variables are set in Vercel dashboard
-3. **Serverless Limits**: Vercel has limits on execution duration (30 seconds) and memory (1024MB)
+If your build fails:
 
-### Health Check
+1. Check the build logs in the Vercel dashboard
+2. Ensure all dependencies are correctly listed in `package.json`
+3. Verify that the build command in `vercel.json` matches `package.json`
+4. Check for TypeScript errors by running `npm run type-check` locally
 
-The application includes a health check endpoint at `/api/health` which verifies:
-- Database connectivity
-- Service availability
-- System metrics
+### Runtime Errors
 
-You can monitor this endpoint for deployment health.
+If you encounter runtime errors:
 
-## Local Development vs Production
+1. Check the logs in the Vercel dashboard
+2. Ensure environment variables are correctly set
+3. Verify that the memory database is being used in production
 
-For local development, the application uses SQLite database by default. For production deployment on Vercel, it automatically switches to in-memory database to comply with serverless constraints.
+### Performance Issues
 
-To test production-like environment locally:
-```bash
-# Set environment variables
-export VERCEL=1
-export ENABLE_MEMORY_DB=true
-export DATABASE_URL=memory://
+For performance optimization:
 
-# Run development server
-npm run dev
-```
+1. Use Vercel's built-in caching features
+2. Optimize images with Next.js Image component
+3. Implement incremental static regeneration where appropriate
 
-## Monitoring and Logs
+## Recent Fixes
 
-Vercel provides built-in monitoring and logs:
-1. Visit your project dashboard on Vercel
-2. Navigate to the "Logs" tab to view real-time logs
-3. Use the "Analytics" tab to monitor performance
-4. Set up alerts for error rates and performance issues
+The following issues have been resolved to ensure successful deployment:
 
-## Updating the Application
+1. Fixed TypeScript errors in API routes by ensuring proper export naming conventions
+2. Separated cross-department notification functionality into its own route file
+3. Verified successful build with `npm run build` command
 
-To update your deployed application:
+## Scaling Considerations
 
-1. Push changes to your GitHub repository
-2. If using GitHub Actions, the deployment will happen automatically
-3. If deploying manually, re-run the deployment command
+This application is designed for Vercel's serverless infrastructure:
 
-For major updates, consider:
-1. Testing in a staging environment first
-2. Backing up any persistent data (though this application uses in-memory database)
-3. Checking for any breaking changes in dependencies
+1. Each request is handled by a separate serverless function
+2. The in-memory database resets with each function invocation
+3. For production use with data persistence, consider migrating to a cloud database like:
+   - PlanetScale (MySQL)
+   - Supabase (PostgreSQL)
+   - MongoDB Atlas
+   - AWS DynamoDB
+
+## Support
+
+For issues with deployment:
+
+1. Check the [Vercel documentation](https://vercel.com/docs)
+2. Review the [Next.js documentation](https://nextjs.org/docs)
+3. File an issue in the repository if you find a bug in the application code

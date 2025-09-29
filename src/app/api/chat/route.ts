@@ -94,7 +94,7 @@ export const POST = withAuth(async (req: AuthenticatedRequest) => {
  * GET /api/chat/rooms/[application_id]
  * Get chat room and messages for an application
  */
-export const GET_CHAT_ROOM = withAuth(async (req: AuthenticatedRequest, context: { params: Promise<{ application_id: string }> }) => {
+export const GET = withAuth(async (req: AuthenticatedRequest, context: { params: Promise<{ application_id: string }> }) => {
   try {
     const user = req.user!;
     const { application_id } = await context.params;
@@ -174,26 +174,5 @@ export const GET_CHAT_ROOM = withAuth(async (req: AuthenticatedRequest, context:
   } catch (error) {
     console.error('Get chat room error:', error);
     return ApiResponse.serverError('Failed to get chat room');
-  }
-}, ['STUDENT', 'MENTOR']);
-
-/**
- * GET /api/chat/rooms
- * Get all chat rooms for the current user
- */
-export const GET_USER_CHAT_ROOMS = withAuth(async (req: AuthenticatedRequest) => {
-  try {
-    const user = req.user!;
-
-    // Get user chat rooms
-    const chatRooms = await ChatService.getUserChatRooms(user.id);
-
-    return ApiResponse.success({
-      chat_rooms: chatRooms
-    });
-
-  } catch (error) {
-    console.error('Get user chat rooms error:', error);
-    return ApiResponse.serverError('Failed to get chat rooms');
   }
 }, ['STUDENT', 'MENTOR']);
